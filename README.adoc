@@ -1,9 +1,23 @@
-= Schedule file Package for Atom
+= Local-Vibecoding環境
 
 == Git URL
 
-https://github.com/BossApe/atom-language-schedule.git[]
+https://github.com/BossApe/lo-vibe.git[]
 
-git@github.com:BossApe/atom-language-schedule.git[]
+git@github.com:BossApe/lo-vibe.git[]
 
+ローカルにVivecoding環境を構築
 
+ディレクトリ構成
+
+ドキュメント
+  - 要求仕様
+  - 要件定義
+    - プロジェクト計画
+      - プロジェクト管理方法: Scram
+      - タスク管理: GitHub Projectsをカンバン形式で管理
+      - ソースバージョン管理: JuJutsu
+      - JuJutsuを使ったGitFlowを考える
+    - 要件定義
+  - 規約
+    - コーディング規約
