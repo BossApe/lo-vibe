@@ -363,7 +363,16 @@ func main() {
 	// 出力ファイル名
 	jst := time.FixedZone("JST", 9*60*60)
 	now := time.Now().In(jst)
-	filename := fmt.Sprintf("promptinglog_%s.adoc", now.Format("20060102150405"))
+	// セッション開始時刻をベースにする（セッションIDが既知の場合）
+	baseTime := now
+	if !info.StartTime.IsZero() {
+		baseTime = info.StartTime.In(jst)
+	}
+	shortID := ""
+	if len(info.SessionID) >= 8 {
+		shortID = "_" + info.SessionID[:8]
+	}
+	filename := fmt.Sprintf("promptinglog_%s%s.adoc", baseTime.Format("20060102150405"), shortID)
 	outputPath := filepath.Join(*flagOutputDir, filename)
 
 	// 書き込み
