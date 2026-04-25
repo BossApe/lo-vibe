@@ -234,13 +234,14 @@ func renderMarkdown(info *sessionInfo) string {
 }
 
 func writeSessionInfoSection(sb *strings.Builder, info *sessionInfo) {
-	startJST := info.StartTime.In(jstZone)
-
 	sb.WriteString("## セッション情報\n\n")
 	sb.WriteString("| 項目 | 値 |\n")
 	sb.WriteString("| --- | --- |\n")
 	sb.WriteString(fmt.Sprintf("| セッション ID | %s |\n", escapeTableCell(info.SessionID)))
-	sb.WriteString(fmt.Sprintf("| 開始日時 (JST) | %s |\n", escapeTableCell(startJST.Format("2006-01-02 15:04:05"))))
+	if !info.StartTime.IsZero() {
+		startJST := info.StartTime.In(jstZone)
+		sb.WriteString(fmt.Sprintf("| 開始日時 (JST) | %s |\n", escapeTableCell(startJST.Format("2006-01-02 15:04:05"))))
+	}
 	sb.WriteString(fmt.Sprintf("| Copilot バージョン | %s |\n", escapeTableCell(info.CopilotVersion)))
 	sb.WriteString(fmt.Sprintf("| VS Code バージョン | %s |\n\n", escapeTableCell(info.VSCodeVersion)))
 }
