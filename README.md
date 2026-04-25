@@ -32,7 +32,7 @@ git@github.com:BossApe/lo-vibe.git
   - 要求仕様フェーズ
   - 要件定義フェーズ
     - プロジェクト計画
-      - プロジェクト管理方法: Scram
+      - プロジェクト管理方法: Scrum
       - タスク管理: GitHub Projects をカンバン形式で管理
       - ソースバージョン管理: JuJutsu
       - JuJutsu を使った GitFlow を考える
