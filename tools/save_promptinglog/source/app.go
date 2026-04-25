@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -61,6 +62,7 @@ type sessionInfo struct {
 
 type config struct {
 	SessionID  string
+	DaysAgo    int
 	OutputDir  string
 	StorageDir string
 }
@@ -69,6 +71,12 @@ type transcriptCandidate struct {
 	path    string
 	modTime time.Time
 }
+
+const (
+	outputFilePrefix    = "promptinglog_"
+	outputFileExtension = ".md"
+	outputTimeLayout    = "20060102150405"
+)
 
 func Main() {
 	if err := Run(os.Args[1:], os.Stdout); err != nil {
@@ -99,7 +107,16 @@ func Run(args []string, stdout io.Writer) error {
 		return err
 	}
 
-	outputPath := buildOutputPath(cfg.OutputDir, info, sessionBaseTime(info))
+	baseTime, skipMessage, err := applyMessageSelection(cfg, info)
+	if err != nil {
+		return err
+	}
+	if skipMessage != "" {
+		fmt.Fprintln(stdout, skipMessage)
+		return nil
+	}
+
+	outputPath := buildOutputPath(cfg.OutputDir, info, baseTime)
 
 	if err := os.WriteFile(outputPath, []byte(renderMarkdown(info)), 0o644); err != nil {
 		return fmt.Errorf("ファイル書き込み失敗: %w", err)
@@ -108,6 +125,168 @@ func Run(args []string, stdout io.Writer) error {
 	fmt.Fprintf(stdout, "保存完了: %s\n", outputPath)
 	fmt.Fprintf(stdout, "ターン数: %d\n", countTurns(info.Messages))
 	return nil
+}
+
+func applyMessageSelection(cfg config, info *sessionInfo) (time.Time, string, error) {
+	if cfg.DaysAgo >= 0 {
+		return selectMessagesByDaysAgo(cfg.DaysAgo, info)
+	}
+
+	if cfg.SessionID != "" {
+		return sessionBaseTime(info), "", nil
+	}
+
+	return selectMessagesIncremental(cfg.OutputDir, info)
+}
+
+func selectMessagesByDaysAgo(daysAgo int, info *sessionInfo) (time.Time, string, error) {
+	filtered, basedOn, targetDay, err := filterMessagesByDaysAgo(info.Messages, daysAgo, nowFunc())
+	if err != nil {
+		return time.Time{}, "", err
+	}
+	if len(filtered) == 0 {
+		return time.Time{}, fmt.Sprintf("指定日(%s)のログはありません", targetDay.Format("2006-01-02")), nil
+	}
+
+	info.Messages = filtered
+	return basedOn.In(jstZone), "", nil
+}
+
+
+func selectMessagesIncremental(outputDir string, info *sessionInfo) (time.Time, string, error) {
+	baseTime := sessionBaseTime(info)
+	filtered, checkpoint, found, err := filterMessagesSinceLastSave(outputDir, info.Messages)
+	if err != nil {
+		return time.Time{}, "", err
+	}
+	if found {
+		if len(filtered) == 0 {
+			return time.Time{}, "新規ログはありません", nil
+		}
+		info.Messages = filtered
+		return checkpoint.In(jstZone), "", nil
+	}
+
+	return baseTime, "", nil
+}
+
+func filterMessagesSinceLastSave(outputDir string, messages []message) ([]message, time.Time, bool, error) {
+	boundary, found, err := latestSavedLogTime(outputDir)
+	if err != nil {
+		return nil, time.Time{}, false, fmt.Errorf("前回保存ログの取得失敗: %w", err)
+	}
+	if !found {
+		return messages, time.Time{}, false, nil
+	}
+
+	filtered := filterMessagesAfter(messages, boundary)
+
+	if len(filtered) == 0 {
+		return filtered, boundary, true, nil
+	}
+
+	return filtered, lastMessageTimestamp(filtered, boundary), true, nil
+}
+
+func filterMessagesAfter(messages []message, boundary time.Time) []message {
+	var filtered []message
+	for _, msg := range messages {
+		if msg.Timestamp.IsZero() {
+			continue
+		}
+		if msg.Timestamp.After(boundary) {
+			filtered = append(filtered, msg)
+		}
+	}
+	return filtered
+}
+
+func filterMessagesByDaysAgo(messages []message, daysAgo int, now time.Time) ([]message, time.Time, time.Time, error) {
+	if daysAgo < 0 {
+		return nil, time.Time{}, time.Time{}, errors.New("-d は 0 以上の整数で指定してください")
+	}
+
+	nowJST := now.In(jstZone)
+	targetDay := time.Date(nowJST.Year(), nowJST.Month(), nowJST.Day(), 0, 0, 0, 0, jstZone).AddDate(0, 0, -daysAgo)
+	nextDay := targetDay.AddDate(0, 0, 1)
+
+	var filtered []message
+	for _, msg := range messages {
+		if msg.Timestamp.IsZero() {
+			continue
+		}
+		ts := msg.Timestamp.In(jstZone)
+		if !ts.Before(targetDay) && ts.Before(nextDay) {
+			filtered = append(filtered, msg)
+		}
+	}
+
+	if len(filtered) == 0 {
+		return filtered, targetDay, targetDay, nil
+	}
+
+	return filtered, lastMessageTimestamp(filtered, targetDay), targetDay, nil
+}
+
+func lastMessageTimestamp(messages []message, fallback time.Time) time.Time {
+	last := messages[len(messages)-1].Timestamp
+	if last.IsZero() {
+		return fallback
+	}
+	return last
+}
+
+func latestSavedLogTime(outputDir string) (time.Time, bool, error) {
+	entries, err := os.ReadDir(outputDir)
+	if err != nil {
+		return time.Time{}, false, err
+	}
+
+	latest := time.Time{}
+	found := false
+	for _, e := range entries {
+		if e.IsDir() {
+			continue
+		}
+
+		timestamp, ok := savedLogTimeFromFilename(e.Name())
+		if !ok {
+			info, err := e.Info()
+			if err != nil {
+				continue
+			}
+			timestamp = info.ModTime()
+		}
+
+		if !found || timestamp.After(latest) {
+			latest = timestamp
+			found = true
+		}
+	}
+
+	return latest, found, nil
+}
+
+func savedLogTimeFromFilename(name string) (time.Time, bool) {
+	if !strings.HasPrefix(name, outputFilePrefix) || !strings.HasSuffix(name, outputFileExtension) {
+		return time.Time{}, false
+	}
+
+	base := strings.TrimSuffix(strings.TrimPrefix(name, outputFilePrefix), outputFileExtension)
+	if idx := strings.Index(base, "_"); idx >= 0 {
+		base = base[:idx]
+	}
+
+	if len(base) != len(outputTimeLayout) {
+		return time.Time{}, false
+	}
+
+	t, err := time.ParseInLocation(outputTimeLayout, base, jstZone)
+	if err != nil {
+		return time.Time{}, false
+	}
+
+	return t, true
 }
 
 func parseConfig(args []string) (config, error) {
@@ -126,13 +305,49 @@ func parseConfig(args []string) (config, error) {
 
 	var cfg config
 	fs.StringVar(&cfg.SessionID, "session-id", "", "保存するセッション ID (省略時は最新)")
+	fs.IntVar(&cfg.DaysAgo, "d", -1, "何日前のログを保存するか。例: -d2 は2日前")
 	fs.StringVar(&cfg.OutputDir, "output-dir", resolveDefaultOutputDir(), "出力先ディレクトリ")
 	fs.StringVar(&cfg.StorageDir, "storage-dir", defaultStorageDir, "workspaceStorage のルートパス")
-	if err := fs.Parse(args); err != nil {
+	normalized := normalizeArgs(args)
+	if err := fs.Parse(normalized); err != nil {
 		return config{}, fmt.Errorf("設定の初期化失敗: %w", err)
+	}
+	if err := validateDaysAgo(fs, cfg.DaysAgo); err != nil {
+		return config{}, err
 	}
 
 	return cfg, nil
+}
+
+func validateDaysAgo(fs *flag.FlagSet, daysAgo int) error {
+	daysAgoSpecified := false
+	fs.Visit(func(f *flag.Flag) {
+		if f.Name == "d" {
+			daysAgoSpecified = true
+		}
+	})
+	if daysAgoSpecified && daysAgo < 0 {
+		return errors.New("設定の初期化失敗: -d は 0 以上の整数で指定してください")
+	}
+	if daysAgo < -1 {
+		return errors.New("設定の初期化失敗: -d は 0 以上の整数で指定してください")
+	}
+	return nil
+}
+
+func normalizeArgs(args []string) []string {
+	normalized := make([]string, 0, len(args)+1)
+	for _, arg := range args {
+		if strings.HasPrefix(arg, "-d") && len(arg) > 2 {
+			suffix := arg[2:]
+			if _, err := strconv.Atoi(suffix); err == nil {
+				normalized = append(normalized, "-d", suffix)
+				continue
+			}
+		}
+		normalized = append(normalized, arg)
+	}
+	return normalized
 }
 
 func loadSessionInfo(transcriptPath string) (*sessionInfo, error) {
@@ -150,7 +365,7 @@ func sessionBaseTime(info *sessionInfo) time.Time {
 	if !info.StartTime.IsZero() {
 		return info.StartTime.In(jstZone)
 	}
-	return time.Now().In(jstZone)
+	return nowFunc().In(jstZone)
 }
 
 func parseTranscript(path string) (*sessionInfo, error) {
@@ -222,6 +437,8 @@ func appendMessage(info *sessionInfo, msgRole role, raw json.RawMessage, ts time
 }
 
 var jstZone = time.FixedZone("JST", 9*60*60)
+
+var nowFunc = time.Now
 
 func renderMarkdown(info *sessionInfo) string {
 	var sb strings.Builder
@@ -400,7 +617,7 @@ func buildOutputPath(outputDir string, info *sessionInfo, baseTime time.Time) st
 	if len(info.SessionID) >= 8 {
 		shortID = "_" + info.SessionID[:8]
 	}
-	filename := fmt.Sprintf("promptinglog_%s%s.md", baseTime.Format("20060102150405"), shortID)
+	filename := fmt.Sprintf("%s%s%s%s", outputFilePrefix, baseTime.Format(outputTimeLayout), shortID, outputFileExtension)
 	return filepath.Join(outputDir, filename)
 }
 
