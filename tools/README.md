@@ -11,7 +11,9 @@
 ```text
 tools/
 ├── README.md             # このファイル
-└── save_promptinglog/    # Copilot プロンプトログ保存ツール (Go)
+├── save_promptinglog/    # Copilot プロンプトログ保存ツール (Go)
+├── generate_issue_roadmap_vegalite/ # Issue難易度ロードマップ生成ツール (Shell/Python)
+└── set_project_fields/   # GitHub Project フィールド一括設定ツール (Shell)
 ```
 
 ## ツール一覧
@@ -19,6 +21,8 @@ tools/
 | ディレクトリ / ファイル名 | 種別 | 概要 |
 | --- | --- | --- |
 | `save_promptinglog/` | Go バッチ | Copilot Chat のトランスクリプトを Markdown 形式で保存する |
+| `generate_issue_roadmap_vegalite/` | Shell/Python | `gh api` で取得した Issue 一覧から Vega-Lite 難易度ロードマップ Markdown を生成する |
+| `set_project_fields/` | Shell script | GitHub Project のカスタムフィールドを一括設定する |
 
 ## 利用方法
 
