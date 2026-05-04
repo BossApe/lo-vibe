@@ -1,4 +1,4 @@
-package source
+package promptinglog
 
 import (
 	"bytes"

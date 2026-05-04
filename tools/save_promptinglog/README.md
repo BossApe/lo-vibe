@@ -17,9 +17,10 @@ save_promptinglog/
 ├── go.mod               # Go モジュール定義
 ├── README.md            # このファイル
 ├── save_promptinglog    # ビルド済みバイナリ (.gitignore 対象)
-└── source/
-    ├── app.go           # 実装本体
-    └── app_test.go      # 単体テスト
+└── internal/
+      └── promptinglog/
+            ├── promptinglog.go      # 実装本体
+            └── promptinglog_test.go # 単体テスト
 ```
 
 ## ビルド

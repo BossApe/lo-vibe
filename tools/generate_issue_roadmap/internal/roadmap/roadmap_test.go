@@ -1,4 +1,4 @@
-package source
+package roadmap
 
 import (
 	"bytes"
@@ -75,7 +75,7 @@ func TestRunWritesHTML(t *testing.T) {
 		t.Fatalf("read output file: %v", err)
 	}
 	text := string(b)
-	if !strings.Contains(text, "Issue難易度ロードマップ") {
+	if !strings.Contains(text, "Musuhi 開発進捗") {
 		t.Fatalf("html does not contain title")
 	}
 	if !strings.Contains(text, "TK-1-1") || !strings.Contains(text, "TK-1-2") {

@@ -31,5 +31,10 @@
       ]
     }
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BossApe/Musuhi.git",
+    "directory": "tools/open_in_integrated_browser_ext"
+  },
   "license": "UNLICENSED"
 }

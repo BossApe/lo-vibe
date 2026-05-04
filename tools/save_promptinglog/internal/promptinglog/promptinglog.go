@@ -1,4 +1,4 @@
-package source
+package promptinglog
 
 import (
 	"bufio"
@@ -151,7 +151,6 @@ func selectMessagesByDaysAgo(daysAgo int, info *sessionInfo) (time.Time, string,
 	info.Messages = filtered
 	return basedOn.In(jstZone), "", nil
 }
-
 
 func selectMessagesIncremental(outputDir string, info *sessionInfo) (time.Time, string, error) {
 	baseTime := sessionBaseTime(info)

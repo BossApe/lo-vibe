@@ -15,9 +15,16 @@ generate_issue_roadmap/
 ├── main.go            # CLI エントリポイント
 ├── go.mod             # Go モジュール定義
 ├── README.md          # このファイル
-└── source/
-    ├── app.go         # 実装本体
-    └── app_test.go    # 単体テスト
+├── generate_issue_roadmap  # ビルド済みバイナリ (.gitignore 対象)
+└── internal/
+  └── roadmap/
+    ├── roadmap.go       # 実行フロー
+    ├── config.go        # 設定/引数処理
+    ├── fetch.go         # GitHub Project 取得
+    ├── lane.go          # レーン構築/集計
+    ├── render.go        # HTML描画
+    ├── model.go         # 型定義
+    └── roadmap_test.go  # 単体テスト
 ```
 
 ## 難易度マッピング

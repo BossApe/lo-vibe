@@ -1,7 +1,7 @@
 package main
 
-import "generate_issue_roadmap/source"
+import "generate_issue_roadmap/internal/roadmap"
 
 func main() {
-	source.Main()
+	roadmap.Main()
 }

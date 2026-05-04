@@ -1,5 +1,7 @@
 #!/bin/bash
 # GitHub Project fields bulk update script.
+set -euo pipefail
+
 PROJ_NUM=2
 PROJ_ID=PVT_kwHOAO_tRc4BWapm
 OWNER=BossApe
@@ -71,6 +73,16 @@ ID_TK17=PVTI_lAHOAO_tRc4BWapmzgrn4DA
 
 set_ss() { gh project item-edit --project-id "$PROJ_ID" --id "$1" --field-id "$2" --single-select-option-id "$3"; }
 set_tx() { gh project item-edit --project-id "$PROJ_ID" --id "$1" --field-id "$2" --text "$3"; }
+
+if ! command -v gh >/dev/null 2>&1; then
+	echo "ERROR: gh コマンドが見つかりません。GitHub CLI をインストールしてください。" >&2
+	exit 1
+fi
+
+if [ -z "$PROJ_ID" ] || [ -z "$OWNER" ] || [ "$PROJ_NUM" -le 0 ]; then
+	echo "ERROR: PROJ_ID / OWNER / PROJ_NUM の設定が不正です。" >&2
+	exit 1
+fi
 
 echo "=== PH0 ==="
 set_ss "$ID_PH0" "$F_TYPE" "$T_PHASE"
