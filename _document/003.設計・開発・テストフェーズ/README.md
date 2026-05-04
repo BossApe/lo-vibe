@@ -6,7 +6,7 @@
 <summary>目次（クリックで展開）</summary>
 
 - [1. 開発規約](#1-開発規約)
-- [2. Phase・Iteration・Checket 分割基準](#2-phaseiterationchecket-分割基準)
+- [2. Phase・Iteration・Ticket 分割基準](#2-phaseiterationticket-分割基準)
 - [3. 運用ルール要約](#3-運用ルール要約)
 
 </details>
@@ -18,15 +18,15 @@
 - [001-03.フェーズ・イテレーション・チケット設計規約](001.開発規約/001-03.フェーズ・イテレーション・チケット設計規約.md)
 - [001-04.tools利用規約](001.開発規約/001-04.tools利用規約.md)
 
-## 2. Phase・Iteration・Checket 分割基準
+## 2. Phase・Iteration・Ticket 分割基準
 
-タスク分割の基準は [002-03.Phase-Iteration-Checket分割基準](../002.要件定義フェーズ/002.プロジェクト計画/002-03.Phase-Iteration-Checket分割基準.md) で定義する。
+タスク分割の基準は [002-03.Phase-Iteration-Ticket分割基準](../002.要件定義フェーズ/002.プロジェクト計画/002-03.Phase-Iteration-Ticket分割基準.md) で定義する。
 
 | 分割単位 | 基準 |
 | --- | --- |
 | Phase | 1つのユースケースが完成するまでを 1 Phase とする |
 | Iteration | 1つのユースケースを完成させるのに必要な 1 機能を完成させるのを 1 Iteration とする |
-| Checket | 1 Iteration 内に必要な 1 小機能の完成までを 1 Checket とする |
+| Ticket | 1 Iteration 内に必要な 1 小機能の完成までを 1 Ticket とする |
 
 Phase 0 は「提案・要求仕様・要件定義」の固定フェーズであり、タスク構造は固定。Phase 1 以降のテンプレート詳細は [001-03.フェーズ・イテレーション・チェケット設計規約](001.開発規約/001-03.フェーズ・イテレーション・チケット設計規約.md) を参照する。
 
@@ -47,5 +47,5 @@ Phase 0 は「提案・要求仕様・要件定義」の固定フェーズであ
 | --- | --- | --- | --- |
 | 2026-05-02 | 0.1 | 初版作成 | Copilot |
 | 2026-05-03 | 0.2 | タスク完了ごとの成果物出力運用を追記 | Copilot |
-| 2026-05-04 | 0.3 | Phase・Iteration・Checket分割基準セクション追加 | Copilot |
+| 2026-05-04 | 0.3 | Phase・Iteration・Ticket分割基準セクション追加 | Copilot |
 | 2026-05-04 | 0.4 | UC-01業務フローに合わせて成果物保存先とcommit/push運用を具体化 | Copilot |
