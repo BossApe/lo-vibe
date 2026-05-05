@@ -24,7 +24,7 @@ jobs:
       - name: go build
         run: go build ./...
       - name: go test
-        run: go test ./internal/... -v
+        run: go test ./... -v
 
   build-frontend:
     name: SvelteKit Build

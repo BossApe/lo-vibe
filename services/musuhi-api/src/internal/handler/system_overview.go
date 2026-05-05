@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"strings"
 
 	"musuhi-api/internal/service"
 )
@@ -87,7 +86,7 @@ func (h *SystemOverviewHandler) Create(w http.ResponseWriter, r *http.Request) {
 // GetByID は GET /api/v1/system-overviews/{id} を処理する
 func (h *SystemOverviewHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	// パスから id を取得（Go 1.22 の ServeMux パターン {id} を使用）
-	id := strings.TrimPrefix(r.PathValue("id"), "")
+	id := r.PathValue("id")
 	if id == "" {
 		writeError(w, http.StatusBadRequest, "BAD_REQUEST", "id は必須です", nil)
 		return

@@ -38,11 +38,11 @@
 
 			if (res.status === 201) {
 				const data = await res.json();
-				successMessage = `保存しました（ID: ${data.id}）`;
+				successMessage = `保存しました（ID: ${data.data.id}）`;
 				content = '';
 			} else if (res.status === 422) {
 				const data = await res.json();
-				errorMessage = data.message ?? 'バリデーションエラーが発生しました。';
+				errorMessage = data.error?.message ?? 'バリデーションエラーが発生しました。';
 			} else {
 				errorMessage = 'サーバーエラーが発生しました。しばらく待ってから再試行してください。';
 			}
