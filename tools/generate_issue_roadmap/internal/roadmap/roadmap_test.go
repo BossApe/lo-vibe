@@ -20,9 +20,9 @@ func TestBuildOutputFileName(t *testing.T) {
 
 func TestBuildLanes(t *testing.T) {
 	rows := []issueRow{
-		{ID: "#10", Number: 10, Title: "IT0-1: Iteration", Type: "Iteration", Phase: "Phase 0", Iteration: "1", Parent: "IT0-1", Difficulty: 0},
-		{ID: "#16", Number: 16, Title: "TK-1-1: first", Type: "Ticket", Parent: "IT0-1", Estimate: "L", Difficulty: 5},
-		{ID: "#17", Number: 17, Title: "TK-1-2: second", Type: "Ticket", Parent: "IT0-1", Estimate: "M", Difficulty: 3},
+		{ID: "#10", Number: 10, Title: "SP0-1: Sprint", Type: "Sprint", Phase: "Phase 0", Sprint: "1", Parent: "SP0-1", Difficulty: 0},
+		{ID: "#16", Number: 16, Title: "TK-1-1: first", Type: "Ticket", Parent: "SP0-1", Estimate: "L", Difficulty: 5},
+		{ID: "#17", Number: 17, Title: "TK-1-2: second", Type: "Ticket", Parent: "SP0-1", Estimate: "M", Difficulty: 3},
 	}
 
 	lanes := buildLanes(rows)
@@ -51,9 +51,9 @@ func TestRunWritesHTML(t *testing.T) {
 		return &projectData{
 			Title: "Musuhi 開発",
 			Items: []projectItemNode{
-				makeIssueNode(10, "IT0-1: Iteration", "https://example.com/10", "BossApe/Musuhi", map[string]string{"Type": "Iteration", "Phase": "Phase 0", "Iteration": "1", "Parent": "IT0-1"}),
-				makeIssueNode(16, "TK-1-1: first", "https://example.com/16", "BossApe/Musuhi", map[string]string{"Type": "Ticket", "Parent": "IT0-1", "Estimate": "L"}),
-				makeIssueNode(17, "TK-1-2: second", "https://example.com/17", "BossApe/Musuhi", map[string]string{"Type": "Ticket", "Parent": "IT0-1", "Estimate": "M"}),
+				makeIssueNode(10, "SP0-1: Sprint", "https://example.com/10", "BossApe/Musuhi", map[string]string{"Type": "Sprint", "Phase": "Phase 0", "Sprint": "1", "Parent": "SP0-1"}),
+				makeIssueNode(16, "TK-1-1: first", "https://example.com/16", "BossApe/Musuhi", map[string]string{"Type": "Ticket", "Parent": "SP0-1", "Estimate": "L"}),
+				makeIssueNode(17, "TK-1-2: second", "https://example.com/17", "BossApe/Musuhi", map[string]string{"Type": "Ticket", "Parent": "SP0-1", "Estimate": "M"}),
 			},
 		}, nil
 	}

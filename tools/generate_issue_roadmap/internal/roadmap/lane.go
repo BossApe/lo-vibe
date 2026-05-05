@@ -28,7 +28,7 @@ func normalizeRows(project *projectData, cfg config) []issueRow {
 			URL:        content.URL,
 			Type:       fallback(fm["Type"], "Unknown"),
 			Phase:      fallback(fm["Phase"], "Unknown"),
-			Iteration:  fallback(fm["Iteration"], "Unknown"),
+			Sprint:  fallback(fm["Sprint"], "Unknown"),
 			Parent:     fallback(fm["Parent"], "No Parent"),
 			DependsOn:  fm["Depends on"],
 			Status:     fm["Status"],
@@ -83,7 +83,7 @@ func buildLanes(rows []issueRow) []lane {
 		switch r.Type {
 		case "Ticket":
 			tickets = append(tickets, r)
-		case "Phase", "Iteration":
+		case "Phase", "Sprint":
 			parents = append(parents, r)
 		}
 	}
@@ -107,7 +107,7 @@ func buildLanes(rows []issueRow) []lane {
 	}
 	for key := range ticketGroups {
 		if _, ok := parentMap[key]; !ok {
-			parentMap[key] = issueRow{Title: key + " parent lane", Parent: key, Phase: "Unknown", Iteration: "Unknown", Difficulty: 0}
+			parentMap[key] = issueRow{Title: key + " parent lane", Parent: key, Phase: "Unknown", Sprint: "Unknown", Difficulty: 0}
 		}
 	}
 
@@ -303,8 +303,8 @@ func extractTicketCode(title, fallbackVal string) string {
 
 func extractParentKey(r issueRow) string {
 	title := r.Title
-	if r.Type == "Iteration" {
-		if m := itPattern.FindStringSubmatch(title); len(m) > 0 {
+	if r.Type == "Sprint" {
+		if m := spPattern.FindStringSubmatch(title); len(m) > 0 {
 			return m[0]
 		}
 	}
@@ -320,7 +320,7 @@ func extractParentKey(r issueRow) string {
 }
 
 func parentSortTuple(parentKey string) (int, int, int, string) {
-	if m := itPattern.FindStringSubmatch(parentKey); len(m) == 3 {
+	if m := spPattern.FindStringSubmatch(parentKey); len(m) == 3 {
 		var ph, it int
 		fmt.Sscanf(m[1], "%d", &ph)
 		fmt.Sscanf(m[2], "%d", &it)

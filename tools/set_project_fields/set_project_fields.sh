@@ -27,7 +27,7 @@ P_PH0=1ca7cff1
 P_PH1=7ead2372
 P_PH2=f44b5b26
 
-# --- Iteration option IDs ---
+# --- Sprint option IDs ---
 I_1=96080651
 I_2=ab950554
 I_3=b2e16053
@@ -63,12 +63,12 @@ ST_DONE=98236657
 ID_PH0=PVTI_lAHOAO_tRc4BWapmzgrn31U    # #7  PH0
 ID_PH1=PVTI_lAHOAO_tRc4BWapmzgrn31c    # #8  PH1
 ID_PH2=PVTI_lAHOAO_tRc4BWapmzgrn31g    # #9  PH2
-ID_IT01=PVTI_lAHOAO_tRc4BWapmzgrn31w   # #10 IT0-1
-ID_IT02=PVTI_lAHOAO_tRc4BWapmzgrn32I   # #11 IT0-2
-ID_IT03=PVTI_lAHOAO_tRc4BWapmzgrn32c   # #12 IT0-3
-ID_IT04=PVTI_lAHOAO_tRc4BWapmzgrn32k   # #13 IT0-4
-ID_IT11=PVTI_lAHOAO_tRc4BWapmzgrn32w   # #14 IT1-1
-ID_IT12=PVTI_lAHOAO_tRc4BWapmzgrn320   # #15 IT1-2
+ID_IT01=PVTI_lAHOAO_tRc4BWapmzgrn31w   # #10 SP0-1
+ID_IT02=PVTI_lAHOAO_tRc4BWapmzgrn32I   # #11 SP0-2
+ID_IT03=PVTI_lAHOAO_tRc4BWapmzgrn32c   # #12 SP0-3
+ID_IT04=PVTI_lAHOAO_tRc4BWapmzgrn32k   # #13 SP0-4
+ID_IT11=PVTI_lAHOAO_tRc4BWapmzgrn32w   # #14 SP1-1
+ID_IT12=PVTI_lAHOAO_tRc4BWapmzgrn320   # #15 SP1-2
 ID_TK011=PVTI_lAHOAO_tRc4BWapmzgrn4B8  # #16 TK0-1-1
 ID_TK012=PVTI_lAHOAO_tRc4BWapmzgrn4CI  # #17 TK0-1-2
 ID_TK021=PVTI_lAHOAO_tRc4BWapmzgrn4CQ  # #18 TK0-2-1
@@ -76,8 +76,8 @@ ID_TK022=PVTI_lAHOAO_tRc4BWapmzgrn4Cc  # #19 TK0-2-2
 ID_TK031=PVTI_lAHOAO_tRc4BWapmzgrn4Cg  # #20 TK0-3-1
 ID_TK041=PVTI_lAHOAO_tRc4BWapmzgrn4Cs  # #21 TK0-4-1
 ID_TK042=PVTI_lAHOAO_tRc4BWapmzgrn4DA  # #22 TK0-4-2
-ID_IT13=PVTI_lAHOAO_tRc4BWapmzgr0eJ8   # #23 IT1-3
-ID_IT14=PVTI_lAHOAO_tRc4BWapmzgr0eLA   # #24 IT1-4
+ID_IT13=PVTI_lAHOAO_tRc4BWapmzgr0eJ8   # #23 SP1-3
+ID_IT14=PVTI_lAHOAO_tRc4BWapmzgr0eLA   # #24 SP1-4
 ID_TK111=PVTI_lAHOAO_tRc4BWapmzgr0eLY  # #25 TK1-1-1
 ID_TK112=PVTI_lAHOAO_tRc4BWapmzgr0eL8  # #26 TK1-1-2
 ID_TK113=PVTI_lAHOAO_tRc4BWapmzgr0eMc  # #27 TK1-1-3
@@ -123,9 +123,9 @@ set_ss "$ID_PH2" "$F_EST"    "$E_L"
 set_ss "$ID_PH2" "$F_STATUS" "$ST_TODO"
 set_tx "$ID_PH2" "$F_DEPS"   "PH1"
 
-# ===== Phase 0 Iterations =====
+# ===== Phase 0 Sprints =====
 
-echo "=== IT0-1 ==="
+echo "=== SP0-1 ==="
 set_ss "$ID_IT01" "$F_TYPE"   "$T_ITER"
 set_ss "$ID_IT01" "$F_PHASE"  "$P_PH0"
 set_ss "$ID_IT01" "$F_ITER"   "$I_1"
@@ -134,7 +134,7 @@ set_ss "$ID_IT01" "$F_EST"    "$E_M"
 set_ss "$ID_IT01" "$F_STATUS" "$ST_DONE"
 set_tx "$ID_IT01" "$F_PARENT" "PH0"
 
-echo "=== IT0-2 ==="
+echo "=== SP0-2 ==="
 set_ss "$ID_IT02" "$F_TYPE"   "$T_ITER"
 set_ss "$ID_IT02" "$F_PHASE"  "$P_PH0"
 set_ss "$ID_IT02" "$F_ITER"   "$I_2"
@@ -142,9 +142,9 @@ set_ss "$ID_IT02" "$F_PRI"    "$PRI_P0"
 set_ss "$ID_IT02" "$F_EST"    "$E_M"
 set_ss "$ID_IT02" "$F_STATUS" "$ST_DONE"
 set_tx "$ID_IT02" "$F_PARENT" "PH0"
-set_tx "$ID_IT02" "$F_DEPS"   "IT0-1"
+set_tx "$ID_IT02" "$F_DEPS"   "SP0-1"
 
-echo "=== IT0-3 ==="
+echo "=== SP0-3 ==="
 set_ss "$ID_IT03" "$F_TYPE"   "$T_ITER"
 set_ss "$ID_IT03" "$F_PHASE"  "$P_PH0"
 set_ss "$ID_IT03" "$F_ITER"   "$I_3"
@@ -152,9 +152,9 @@ set_ss "$ID_IT03" "$F_PRI"    "$PRI_P0"
 set_ss "$ID_IT03" "$F_EST"    "$E_M"
 set_ss "$ID_IT03" "$F_STATUS" "$ST_DONE"
 set_tx "$ID_IT03" "$F_PARENT" "PH0"
-set_tx "$ID_IT03" "$F_DEPS"   "IT0-2"
+set_tx "$ID_IT03" "$F_DEPS"   "SP0-2"
 
-echo "=== IT0-4 ==="
+echo "=== SP0-4 ==="
 set_ss "$ID_IT04" "$F_TYPE"   "$T_ITER"
 set_ss "$ID_IT04" "$F_PHASE"  "$P_PH0"
 set_ss "$ID_IT04" "$F_ITER"   "$I_4"
@@ -162,11 +162,11 @@ set_ss "$ID_IT04" "$F_PRI"    "$PRI_P0"
 set_ss "$ID_IT04" "$F_EST"    "$E_M"
 set_ss "$ID_IT04" "$F_STATUS" "$ST_DONE"
 set_tx "$ID_IT04" "$F_PARENT" "PH0"
-set_tx "$ID_IT04" "$F_DEPS"   "IT0-3"
+set_tx "$ID_IT04" "$F_DEPS"   "SP0-3"
 
-# ===== Phase 1 Iterations =====
+# ===== Phase 1 Sprints =====
 
-echo "=== IT1-1 ==="
+echo "=== SP1-1 ==="
 set_ss "$ID_IT11" "$F_TYPE"   "$T_ITER"
 set_ss "$ID_IT11" "$F_PHASE"  "$P_PH1"
 set_ss "$ID_IT11" "$F_ITER"   "$I_1"
@@ -176,7 +176,7 @@ set_ss "$ID_IT11" "$F_STATUS" "$ST_TODO"
 set_tx "$ID_IT11" "$F_PARENT" "PH1"
 set_tx "$ID_IT11" "$F_DEPS"   "PH0"
 
-echo "=== IT1-2 ==="
+echo "=== SP1-2 ==="
 set_ss "$ID_IT12" "$F_TYPE"   "$T_ITER"
 set_ss "$ID_IT12" "$F_PHASE"  "$P_PH1"
 set_ss "$ID_IT12" "$F_ITER"   "$I_2"
@@ -184,9 +184,9 @@ set_ss "$ID_IT12" "$F_PRI"    "$PRI_P1"
 set_ss "$ID_IT12" "$F_EST"    "$E_L"
 set_ss "$ID_IT12" "$F_STATUS" "$ST_TODO"
 set_tx "$ID_IT12" "$F_PARENT" "PH1"
-set_tx "$ID_IT12" "$F_DEPS"   "IT1-1"
+set_tx "$ID_IT12" "$F_DEPS"   "SP1-1"
 
-echo "=== IT1-3 ==="
+echo "=== SP1-3 ==="
 set_ss "$ID_IT13" "$F_TYPE"   "$T_ITER"
 set_ss "$ID_IT13" "$F_PHASE"  "$P_PH1"
 set_ss "$ID_IT13" "$F_ITER"   "$I_3"
@@ -194,9 +194,9 @@ set_ss "$ID_IT13" "$F_PRI"    "$PRI_P1"
 set_ss "$ID_IT13" "$F_EST"    "$E_L"
 set_ss "$ID_IT13" "$F_STATUS" "$ST_TODO"
 set_tx "$ID_IT13" "$F_PARENT" "PH1"
-set_tx "$ID_IT13" "$F_DEPS"   "IT1-2"
+set_tx "$ID_IT13" "$F_DEPS"   "SP1-2"
 
-echo "=== IT1-4 ==="
+echo "=== SP1-4 ==="
 set_ss "$ID_IT14" "$F_TYPE"   "$T_ITER"
 set_ss "$ID_IT14" "$F_PHASE"  "$P_PH1"
 set_ss "$ID_IT14" "$F_ITER"   "$I_4"
@@ -204,7 +204,7 @@ set_ss "$ID_IT14" "$F_PRI"    "$PRI_P1"
 set_ss "$ID_IT14" "$F_EST"    "$E_L"
 set_ss "$ID_IT14" "$F_STATUS" "$ST_TODO"
 set_tx "$ID_IT14" "$F_PARENT" "PH1"
-set_tx "$ID_IT14" "$F_DEPS"   "IT1-3"
+set_tx "$ID_IT14" "$F_DEPS"   "SP1-3"
 
 # ===== Phase 0 Tickets =====
 
@@ -216,7 +216,7 @@ set_ss "$ID_TK011" "$F_SVC"    "$S_ALL"
 set_ss "$ID_TK011" "$F_PRI"    "$PRI_P0"
 set_ss "$ID_TK011" "$F_EST"    "$E_M"
 set_ss "$ID_TK011" "$F_STATUS" "$ST_DONE"
-set_tx "$ID_TK011" "$F_PARENT" "IT0-1"
+set_tx "$ID_TK011" "$F_PARENT" "SP0-1"
 
 echo "=== TK0-1-2 ==="
 set_ss "$ID_TK012" "$F_TYPE"   "$T_TICKET"
@@ -226,7 +226,7 @@ set_ss "$ID_TK012" "$F_SVC"    "$S_ALL"
 set_ss "$ID_TK012" "$F_PRI"    "$PRI_P0"
 set_ss "$ID_TK012" "$F_EST"    "$E_S"
 set_ss "$ID_TK012" "$F_STATUS" "$ST_DONE"
-set_tx "$ID_TK012" "$F_PARENT" "IT0-1"
+set_tx "$ID_TK012" "$F_PARENT" "SP0-1"
 set_tx "$ID_TK012" "$F_DEPS"   "TK0-1-1"
 
 echo "=== TK0-2-1 ==="
@@ -237,7 +237,7 @@ set_ss "$ID_TK021" "$F_SVC"    "$S_ALL"
 set_ss "$ID_TK021" "$F_PRI"    "$PRI_P0"
 set_ss "$ID_TK021" "$F_EST"    "$E_M"
 set_ss "$ID_TK021" "$F_STATUS" "$ST_DONE"
-set_tx "$ID_TK021" "$F_PARENT" "IT0-2"
+set_tx "$ID_TK021" "$F_PARENT" "SP0-2"
 set_tx "$ID_TK021" "$F_DEPS"   "TK0-1-2"
 
 echo "=== TK0-2-2 ==="
@@ -248,7 +248,7 @@ set_ss "$ID_TK022" "$F_SVC"    "$S_ALL"
 set_ss "$ID_TK022" "$F_PRI"    "$PRI_P0"
 set_ss "$ID_TK022" "$F_EST"    "$E_S"
 set_ss "$ID_TK022" "$F_STATUS" "$ST_DONE"
-set_tx "$ID_TK022" "$F_PARENT" "IT0-2"
+set_tx "$ID_TK022" "$F_PARENT" "SP0-2"
 set_tx "$ID_TK022" "$F_DEPS"   "TK0-2-1"
 
 echo "=== TK0-3-1 ==="
@@ -259,7 +259,7 @@ set_ss "$ID_TK031" "$F_SVC"    "$S_ALL"
 set_ss "$ID_TK031" "$F_PRI"    "$PRI_P0"
 set_ss "$ID_TK031" "$F_EST"    "$E_M"
 set_ss "$ID_TK031" "$F_STATUS" "$ST_DONE"
-set_tx "$ID_TK031" "$F_PARENT" "IT0-3"
+set_tx "$ID_TK031" "$F_PARENT" "SP0-3"
 set_tx "$ID_TK031" "$F_DEPS"   "TK0-2-2"
 
 echo "=== TK0-4-1 ==="
@@ -270,7 +270,7 @@ set_ss "$ID_TK041" "$F_SVC"    "$S_ALL"
 set_ss "$ID_TK041" "$F_PRI"    "$PRI_P0"
 set_ss "$ID_TK041" "$F_EST"    "$E_M"
 set_ss "$ID_TK041" "$F_STATUS" "$ST_DONE"
-set_tx "$ID_TK041" "$F_PARENT" "IT0-4"
+set_tx "$ID_TK041" "$F_PARENT" "SP0-4"
 set_tx "$ID_TK041" "$F_DEPS"   "TK0-3-1"
 
 echo "=== TK0-4-2 ==="
@@ -281,10 +281,10 @@ set_ss "$ID_TK042" "$F_SVC"    "$S_ALL"
 set_ss "$ID_TK042" "$F_PRI"    "$PRI_P0"
 set_ss "$ID_TK042" "$F_EST"    "$E_S"
 set_ss "$ID_TK042" "$F_STATUS" "$ST_DONE"
-set_tx "$ID_TK042" "$F_PARENT" "IT0-4"
+set_tx "$ID_TK042" "$F_PARENT" "SP0-4"
 set_tx "$ID_TK042" "$F_DEPS"   "TK0-4-1"
 
-# ===== Phase 1 Iteration 1 Tickets =====
+# ===== Phase 1 Sprint 1 Tickets =====
 
 echo "=== TK1-1-1 ==="
 set_ss "$ID_TK111" "$F_TYPE"   "$T_TICKET"
@@ -294,7 +294,7 @@ set_ss "$ID_TK111" "$F_SVC"    "$S_ALL"
 set_ss "$ID_TK111" "$F_PRI"    "$PRI_P1"
 set_ss "$ID_TK111" "$F_EST"    "$E_M"
 set_ss "$ID_TK111" "$F_STATUS" "$ST_TODO"
-set_tx "$ID_TK111" "$F_PARENT" "IT1-1"
+set_tx "$ID_TK111" "$F_PARENT" "SP1-1"
 
 echo "=== TK1-1-2 ==="
 set_ss "$ID_TK112" "$F_TYPE"   "$T_TICKET"
@@ -304,7 +304,7 @@ set_ss "$ID_TK112" "$F_SVC"    "$S_ALL"
 set_ss "$ID_TK112" "$F_PRI"    "$PRI_P1"
 set_ss "$ID_TK112" "$F_EST"    "$E_M"
 set_ss "$ID_TK112" "$F_STATUS" "$ST_TODO"
-set_tx "$ID_TK112" "$F_PARENT" "IT1-1"
+set_tx "$ID_TK112" "$F_PARENT" "SP1-1"
 set_tx "$ID_TK112" "$F_DEPS"   "TK1-1-1"
 
 echo "=== TK1-1-3 ==="
@@ -315,7 +315,7 @@ set_ss "$ID_TK113" "$F_SVC"    "$S_ALL"
 set_ss "$ID_TK113" "$F_PRI"    "$PRI_P1"
 set_ss "$ID_TK113" "$F_EST"    "$E_M"
 set_ss "$ID_TK113" "$F_STATUS" "$ST_TODO"
-set_tx "$ID_TK113" "$F_PARENT" "IT1-1"
+set_tx "$ID_TK113" "$F_PARENT" "SP1-1"
 set_tx "$ID_TK113" "$F_DEPS"   "TK1-1-2"
 
 echo "=== TK1-1-4 ==="
@@ -326,7 +326,7 @@ set_ss "$ID_TK114" "$F_SVC"    "$S_ALL"
 set_ss "$ID_TK114" "$F_PRI"    "$PRI_P1"
 set_ss "$ID_TK114" "$F_EST"    "$E_M"
 set_ss "$ID_TK114" "$F_STATUS" "$ST_TODO"
-set_tx "$ID_TK114" "$F_PARENT" "IT1-1"
+set_tx "$ID_TK114" "$F_PARENT" "SP1-1"
 set_tx "$ID_TK114" "$F_DEPS"   "TK1-1-3"
 
 echo "=== TK1-1-5 ==="
@@ -337,7 +337,7 @@ set_ss "$ID_TK115" "$F_SVC"    "$S_ALL"
 set_ss "$ID_TK115" "$F_PRI"    "$PRI_P1"
 set_ss "$ID_TK115" "$F_EST"    "$E_S"
 set_ss "$ID_TK115" "$F_STATUS" "$ST_TODO"
-set_tx "$ID_TK115" "$F_PARENT" "IT1-1"
+set_tx "$ID_TK115" "$F_PARENT" "SP1-1"
 set_tx "$ID_TK115" "$F_DEPS"   "TK1-1-4"
 
 echo "=== TK1-1-6 ==="
@@ -348,7 +348,7 @@ set_ss "$ID_TK116" "$F_SVC"    "$S_ALL"
 set_ss "$ID_TK116" "$F_PRI"    "$PRI_P1"
 set_ss "$ID_TK116" "$F_EST"    "$E_S"
 set_ss "$ID_TK116" "$F_STATUS" "$ST_TODO"
-set_tx "$ID_TK116" "$F_PARENT" "IT1-1"
+set_tx "$ID_TK116" "$F_PARENT" "SP1-1"
 set_tx "$ID_TK116" "$F_DEPS"   "TK1-1-5"
 
 echo "=== 完了 ==="

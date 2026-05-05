@@ -57,7 +57,7 @@ type issueRow struct {
 	URL        string
 	Type       string
 	Phase      string
-	Iteration  string
+	Sprint     string
 	Parent     string
 	DependsOn  string
 	Status     string
@@ -113,7 +113,7 @@ type runFunc func(args []string, stdout io.Writer, fetcher projectFetcher, now f
 var (
 	ticketOrderPattern = regexp.MustCompile(`TK-\d+-(\d+)`)
 	ticketCodePattern  = regexp.MustCompile(`(TK-\d+-\d+)`)
-	itPattern          = regexp.MustCompile(`IT(\d+)-(\d+)`)
+	spPattern          = regexp.MustCompile(`SP(\d+)-(\d+)`)
 	phPattern          = regexp.MustCompile(`PH(\d+)`)
 	invalidFileChars   = regexp.MustCompile(`[\\/:*?"<>|\x00-\x1f]`)
 )
