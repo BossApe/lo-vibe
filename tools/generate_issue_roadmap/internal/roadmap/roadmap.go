@@ -60,7 +60,7 @@ func Run(args []string, stdout io.Writer, fetcher projectFetcher, now func() tim
 		TotalItems:       len(rows),
 		TotalTickets:     totalTickets,
 		MaxDifficulty:    maxDifficulty,
-		DifficultyLegend: "XS=1, S=2, M=3, L=5, XL=8",
+		DifficultyLegend: "Story Point優先 / フォールバック: XS=1, S=2, M=3, L=5, XL=8",
 		Lanes:            lanes,
 	}); err != nil {
 		return err

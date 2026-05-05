@@ -3,6 +3,7 @@ package roadmap
 import (
 	"fmt"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -17,10 +18,7 @@ func normalizeRows(project *projectData, cfg config) []issueRow {
 		}
 		fm := fieldMap(item.FieldValues.Nodes)
 		est := strings.ToUpper(strings.TrimSpace(fm["Estimate"]))
-		diff, ok := estimateScore[est]
-		if !ok {
-			diff = 1
-		}
+		diff := storyPointDifficulty(fm["Story Point"], est)
 		rows = append(rows, issueRow{
 			ID:         fmt.Sprintf("#%d", content.Number),
 			Number:     content.Number,
@@ -28,7 +26,7 @@ func normalizeRows(project *projectData, cfg config) []issueRow {
 			URL:        content.URL,
 			Type:       fallback(fm["Type"], "Unknown"),
 			Phase:      fallback(fm["Phase"], "Unknown"),
-			Sprint:  fallback(fm["Sprint"], "Unknown"),
+			Sprint:     fallback(fm["Sprint"], "Unknown"),
 			Parent:     fallback(fm["Parent"], "No Parent"),
 			DependsOn:  fm["Depends on"],
 			Status:     fm["Status"],
@@ -37,6 +35,21 @@ func normalizeRows(project *projectData, cfg config) []issueRow {
 		})
 	}
 	return rows
+}
+
+// storyPointDifficulty は Story Point フィールドが正の整数として設定されている場合
+// その値を難易度として返す。未設定・非数値の場合は Estimate のマッピングにフォールバックする。
+func storyPointDifficulty(spText, est string) int {
+	if v := strings.TrimSpace(spText); v != "" {
+		if sp, err := strconv.Atoi(v); err == nil && sp > 0 {
+			return sp
+		}
+	}
+	diff, ok := estimateScore[est]
+	if !ok {
+		return 1
+	}
+	return diff
 }
 
 func fieldMap(nodes []fieldValueNode) map[string]string {

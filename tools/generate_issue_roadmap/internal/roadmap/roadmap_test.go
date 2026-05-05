@@ -101,3 +101,53 @@ func makeIssueNode(number int, title, url, repo string, fields map[string]string
 	}
 	return n
 }
+
+func TestStoryPointDifficulty(t *testing.T) {
+	tests := []struct {
+		name   string
+		spText string
+		est    string
+		want   int
+	}{
+		{"SP設定あり(3)", "3", "M", 3},
+		{"SP設定あり(8)", "8", "XS", 8},
+		{"SP=0は無視→Estimateフォールバック", "0", "S", 2},
+		{"SP未設定→Estimate L=5", "", "L", 5},
+		{"SP非数値→Estimate XS=1", "abc", "XS", 1},
+		{"SP未設定・Estimate未知→デフォルト1", "", "UNKNOWN", 1},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := storyPointDifficulty(tt.spText, tt.est)
+			if got != tt.want {
+				t.Fatalf("storyPointDifficulty(%q, %q) = %d, want %d", tt.spText, tt.est, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestNormalizeRowsStoryPoint(t *testing.T) {
+	project := &projectData{
+		Title: "Test Project",
+		Items: []projectItemNode{
+			// Story Point 設定あり → SP値を使用
+			makeIssueNode(1, "TK-1-1: task with SP", "https://example.com/1", "BossApe/Musuhi",
+				map[string]string{"Type": "Ticket", "Story Point": "7", "Estimate": "M"}),
+			// Story Point 未設定 → Estimate フォールバック
+			makeIssueNode(2, "TK-1-2: task without SP", "https://example.com/2", "BossApe/Musuhi",
+				map[string]string{"Type": "Ticket", "Estimate": "L"}),
+		},
+	}
+	cfg := config{Owner: "BossApe", Repo: "Musuhi", ProjectNumber: 2}
+	rows := normalizeRows(project, cfg)
+
+	if len(rows) != 2 {
+		t.Fatalf("len(rows) = %d, want 2", len(rows))
+	}
+	if rows[0].Difficulty != 7 {
+		t.Fatalf("row[0].Difficulty = %d, want 7 (Story Point優先)", rows[0].Difficulty)
+	}
+	if rows[1].Difficulty != 5 {
+		t.Fatalf("row[1].Difficulty = %d, want 5 (Estimate L フォールバック)", rows[1].Difficulty)
+	}
+}
