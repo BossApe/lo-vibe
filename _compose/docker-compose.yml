@@ -1,0 +1,43 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: musuhi
+      POSTGRES_PASSWORD: musuhi
+      POSTGRES_DB: musuhi
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../services/musuhi-api/src/db/migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U musuhi"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  musuhi-api:
+    build:
+      context: ../services/musuhi-api/src
+      dockerfile: ../Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      DATABASE_URL: postgres://musuhi:musuhi@postgres:5432/musuhi
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  musuhi-frontend:
+    build:
+      context: ../services/musuhi-frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      VITE_API_BASE_URL: http://musuhi-api:8080
+    depends_on:
+      - musuhi-api
+
+volumes:
+  postgres_data:

@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [dev, main, master]
+  pull_request:
+    branches: [dev, main, master]
+
+jobs:
+  test-api:
+    name: Go API Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/musuhi-api/src
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+          cache-dependency-path: services/musuhi-api/src/go.sum
+      - name: go mod tidy
+        run: go mod tidy
+      - name: go build
+        run: go build ./...
+      - name: go test
+        run: go test ./internal/... -v
+
+  build-frontend:
+    name: SvelteKit Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/musuhi-frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: services/musuhi-frontend/package-lock.json
+      - run: npm ci
+      - run: npm run build
