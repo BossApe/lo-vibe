@@ -54,7 +54,6 @@ labels: ticket
 - **チケット化**: レトロスペクティブ時に検討 / 次Sprint TK予定
 -->
 
-## タスク計測
-- 開始日時: <!-- タスク開始時に記入: yy-mm-dd hh:mm:ss -->
-- 終了日時: <!-- タスク完了時に記入: yy-mm-dd hh:mm:ss -->
-- AI Token数: <!-- タスク完了時に記入 -->
+## タスク計測（記録方法）
+<!-- Issue本文には記載しない。GitHub Projects のフィールド欄（Status/Type/Priority がある欄）に記録する -->
+<!-- 開始日時 / 終了日時 / AI Token数 を更新する -->
