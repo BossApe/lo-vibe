@@ -1,8 +1,22 @@
-[実行日時] 2026-05-07 00:54:50
+[実行日時] 2026-05-07 00:57:34
 [対象ID] SPR-1-1
 [テスト種別] E2Eテスト
-[コマンド] echo e2e-test-dummy
+[コマンド] npm --prefix ../../musuhi-frontend run check
 
-e2e-test-dummy
+
+> musuhi-frontend@0.0.1 check
+> svelte-kit sync && svelte-check --tsconfig ./tsconfig.json
+
+Loading svelte-check in workspace: /Users/noharamasaki/gitspace/musuhi/services/musuhi-frontend
+Getting Svelte diagnostics...
+
+/Users/noharamasaki/gitspace/musuhi/services/musuhi-frontend/tsconfig.json:1:1
+Warn: Cannot find type definition file for 'node'.
+  The file is in the program because:
+    Entry point of type library 'node' specified in compilerOptions 
+
+
+====================================
+svelte-check found 0 errors and 1 warning in 1 file
 
 [終了コード] 0

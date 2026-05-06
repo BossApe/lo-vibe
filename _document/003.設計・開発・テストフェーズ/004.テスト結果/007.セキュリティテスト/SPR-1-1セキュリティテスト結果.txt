@@ -1,8 +1,15 @@
-[実行日時] 2026-05-07 00:54:59
+[実行日時] 2026-05-07 00:57:35
 [対象ID] SPR-1-1
 [テスト種別] セキュリティテスト
-[コマンド] echo security-test-dummy
+[コマンド] go test ./... -race
 
-security-test-dummy
+warning: GOPATH set to GOROOT (/Users/noharamasaki/go) has no effect
+?   	musuhi-api	[no test files]
+?   	musuhi-api/internal/middleware	[no test files]
+?   	musuhi-api/internal/model	[no test files]
+?   	musuhi-api/internal/repository	[no test files]
+ok  	musuhi-api/internal/handler	1.592s
+ok  	musuhi-api/internal/service	1.381s
+ok  	musuhi-api/test/integration	1.819s
 
 [終了コード] 0

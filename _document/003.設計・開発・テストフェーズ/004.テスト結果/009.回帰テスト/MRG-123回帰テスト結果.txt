@@ -1,8 +1,112 @@
-[実行日時] 2026-05-07 00:54:50
+[実行日時] 2026-05-07 00:57:42
 [対象ID] MRG-123
 [テスト種別] 回帰テスト
-[コマンド] echo regression-test-dummy
+[コマンド] go test ./... -v
 
-regression-test-dummy
+warning: GOPATH set to GOROOT (/Users/noharamasaki/go) has no effect
+?   	musuhi-api	[no test files]
+?   	musuhi-api/internal/middleware	[no test files]
+?   	musuhi-api/internal/model	[no test files]
+?   	musuhi-api/internal/repository	[no test files]
+=== RUN   TestProjectHandler_ExtractFeatures_有効な概要IDから機能一覧と構成要素を抽出する_正常系
+--- PASS: TestProjectHandler_ExtractFeatures_有効な概要IDから機能一覧と構成要素を抽出する_正常系 (0.00s)
+=== RUN   TestProjectHandler_SuggestName_概要IDを空で指定してプロジェクト名候補を取得する_異常系
+--- PASS: TestProjectHandler_SuggestName_概要IDを空で指定してプロジェクト名候補を取得する_異常系 (0.00s)
+=== RUN   TestProjectHandler_InitDirectory_有効な入力で初期ディレクトリを作成する_正常系
+--- PASS: TestProjectHandler_InitDirectory_有効な入力で初期ディレクトリを作成する_正常系 (0.00s)
+=== RUN   TestProjectHandler_SuggestName_有効な概要IDからプロジェクト名候補を取得する_正常系
+--- PASS: TestProjectHandler_SuggestName_有効な概要IDからプロジェクト名候補を取得する_正常系 (0.00s)
+=== RUN   TestProjectHandler_InitDirectory_不正なプロジェクト名で初期ディレクトリを作成する_異常系
+--- PASS: TestProjectHandler_InitDirectory_不正なプロジェクト名で初期ディレクトリを作成する_異常系 (0.00s)
+=== RUN   TestProjectHandler_ExtractFeatures_存在しない概要IDから機能一覧を抽出する_異常系
+--- PASS: TestProjectHandler_ExtractFeatures_存在しない概要IDから機能一覧を抽出する_異常系 (0.00s)
+=== RUN   TestSystemOverviewHandler_Create_システム概要に通常のテキストを入力して保存する_正常系
+--- PASS: TestSystemOverviewHandler_Create_システム概要に通常のテキストを入力して保存する_正常系 (0.00s)
+=== RUN   TestSystemOverviewHandler_Create_システム概要を空文字で入力して保存する_異常系
+--- PASS: TestSystemOverviewHandler_Create_システム概要を空文字で入力して保存する_異常系 (0.00s)
+=== RUN   TestSystemOverviewHandler_GetByID_有効なUUIDでシステム概要を取得する_正常系
+--- PASS: TestSystemOverviewHandler_GetByID_有効なUUIDでシステム概要を取得する_正常系 (0.00s)
+=== RUN   TestSystemOverviewHandler_GetByID_存在しないUUIDでシステム概要を取得する_異常系
+--- PASS: TestSystemOverviewHandler_GetByID_存在しないUUIDでシステム概要を取得する_異常系 (0.00s)
+PASS
+ok  	musuhi-api/internal/handler	0.239s
+=== RUN   TestProjectService_ExtractFeatures_有効な概要IDから機能一覧と構成要素を抽出する_正常系
+--- PASS: TestProjectService_ExtractFeatures_有効な概要IDから機能一覧と構成要素を抽出する_正常系 (0.00s)
+=== RUN   TestProjectService_SuggestName_存在しない概要IDからプロジェクト名候補を取得する_異常系
+--- PASS: TestProjectService_SuggestName_存在しない概要IDからプロジェクト名候補を取得する_異常系 (0.00s)
+=== RUN   TestProjectService_InitDirectory_有効なプロジェクト名と絶対パスで初期ディレクトリを作成する_正常系
+--- PASS: TestProjectService_InitDirectory_有効なプロジェクト名と絶対パスで初期ディレクトリを作成する_正常系 (0.00s)
+=== RUN   TestProjectService_SuggestName_有効な概要IDからプロジェクト名候補を取得する_正常系
+--- PASS: TestProjectService_SuggestName_有効な概要IDからプロジェクト名候補を取得する_正常系 (0.00s)
+=== RUN   TestProjectService_InitDirectory_相対パスで初期ディレクトリを作成する_異常系
+--- PASS: TestProjectService_InitDirectory_相対パスで初期ディレクトリを作成する_異常系 (0.00s)
+=== RUN   TestProjectService_ExtractFeatures_UUID形式ではない概要IDから機能一覧を抽出する_異常系
+--- PASS: TestProjectService_ExtractFeatures_UUID形式ではない概要IDから機能一覧を抽出する_異常系 (0.00s)
+=== RUN   TestProjectService_ExtractFeatures_概要取得時にリポジトリエラーが発生した状態で機能一覧を抽出する_異常系
+--- PASS: TestProjectService_ExtractFeatures_概要取得時にリポジトリエラーが発生した状態で機能一覧を抽出する_異常系 (0.00s)
+=== RUN   TestSystemOverviewService_Create_システム概要に通常のテキストを入力して保存する_正常系
+--- PASS: TestSystemOverviewService_Create_システム概要に通常のテキストを入力して保存する_正常系 (0.00s)
+=== RUN   TestSystemOverviewService_Create_システム概要を空文字で入力して保存する_異常系
+--- PASS: TestSystemOverviewService_Create_システム概要を空文字で入力して保存する_異常系 (0.00s)
+=== RUN   TestSystemOverviewService_Create_システム概要に4097文字を入力して保存する_境界値
+--- PASS: TestSystemOverviewService_Create_システム概要に4097文字を入力して保存する_境界値 (0.00s)
+=== RUN   TestSystemOverviewService_GetByID_有効なUUIDでシステム概要を取得する_正常系
+--- PASS: TestSystemOverviewService_GetByID_有効なUUIDでシステム概要を取得する_正常系 (0.00s)
+=== RUN   TestSystemOverviewService_GetByID_UUID形式ではないIDでシステム概要を取得する_異常系
+--- PASS: TestSystemOverviewService_GetByID_UUID形式ではないIDでシステム概要を取得する_異常系 (0.00s)
+=== RUN   TestSystemOverviewService_GetByID_存在しないUUIDでシステム概要を取得する_異常系
+--- PASS: TestSystemOverviewService_GetByID_存在しないUUIDでシステム概要を取得する_異常系 (0.00s)
+PASS
+ok  	musuhi-api/internal/service	0.589s
+=== RUN   TestIntegration_ExtractFeatures_有効な概要IDから機能一覧と構成要素を抽出する_正常系
+2026/05/07 00:57:43 INFO http request method=POST path=/api/v1/projects/extract-features status=200 duration_ms=0
+--- PASS: TestIntegration_ExtractFeatures_有効な概要IDから機能一覧と構成要素を抽出する_正常系 (0.00s)
+=== RUN   TestIntegration_ExtractFeatures_概要IDを空で指定して機能一覧を抽出する_異常系
+2026/05/07 00:57:43 INFO http request method=POST path=/api/v1/projects/extract-features status=422 duration_ms=0
+--- PASS: TestIntegration_ExtractFeatures_概要IDを空で指定して機能一覧を抽出する_異常系 (0.00s)
+=== RUN   TestIntegration_ExtractFeatures_存在しない概要IDから機能一覧を抽出する_異常系
+2026/05/07 00:57:43 INFO http request method=POST path=/api/v1/projects/extract-features status=404 duration_ms=0
+--- PASS: TestIntegration_ExtractFeatures_存在しない概要IDから機能一覧を抽出する_異常系 (0.00s)
+=== RUN   TestIntegration_ExtractFeatures_不正なJSONで機能一覧を抽出する_異常系
+2026/05/07 00:57:43 INFO http request method=POST path=/api/v1/projects/extract-features status=400 duration_ms=0
+--- PASS: TestIntegration_ExtractFeatures_不正なJSONで機能一覧を抽出する_異常系 (0.00s)
+=== RUN   TestIntegration_SuggestName_有効な概要IDからプロジェクト名候補を取得する_正常系
+2026/05/07 00:57:43 INFO http request method=POST path=/api/v1/projects/suggest-name status=200 duration_ms=0
+--- PASS: TestIntegration_SuggestName_有効な概要IDからプロジェクト名候補を取得する_正常系 (0.00s)
+=== RUN   TestIntegration_SuggestName_概要IDを空で指定してプロジェクト名候補を取得する_異常系
+2026/05/07 00:57:43 INFO http request method=POST path=/api/v1/projects/suggest-name status=422 duration_ms=0
+--- PASS: TestIntegration_SuggestName_概要IDを空で指定してプロジェクト名候補を取得する_異常系 (0.00s)
+=== RUN   TestIntegration_SuggestName_存在しない概要IDからプロジェクト名候補を取得する_異常系
+2026/05/07 00:57:43 INFO http request method=POST path=/api/v1/projects/suggest-name status=404 duration_ms=0
+--- PASS: TestIntegration_SuggestName_存在しない概要IDからプロジェクト名候補を取得する_異常系 (0.00s)
+=== RUN   TestIntegration_SuggestName_不正なJSONでプロジェクト名候補を取得する_異常系
+2026/05/07 00:57:43 INFO http request method=POST path=/api/v1/projects/suggest-name status=400 duration_ms=0
+--- PASS: TestIntegration_SuggestName_不正なJSONでプロジェクト名候補を取得する_異常系 (0.00s)
+=== RUN   TestIntegration_InitDirectory_有効な入力で初期ディレクトリを作成する_正常系
+2026/05/07 00:57:43 INFO http request method=POST path=/api/v1/projects/init-directory status=201 duration_ms=0
+--- PASS: TestIntegration_InitDirectory_有効な入力で初期ディレクトリを作成する_正常系 (0.00s)
+=== RUN   TestIntegration_InitDirectory_不正なプロジェクト名で初期ディレクトリを作成する_異常系
+2026/05/07 00:57:43 INFO http request method=POST path=/api/v1/projects/init-directory status=422 duration_ms=0
+--- PASS: TestIntegration_InitDirectory_不正なプロジェクト名で初期ディレクトリを作成する_異常系 (0.00s)
+=== RUN   TestIntegration_InitDirectory_不正なJSONで初期ディレクトリを作成する_異常系
+2026/05/07 00:57:43 INFO http request method=POST path=/api/v1/projects/init-directory status=400 duration_ms=0
+--- PASS: TestIntegration_InitDirectory_不正なJSONで初期ディレクトリを作成する_異常系 (0.00s)
+=== RUN   TestIntegration_ヘルスチェックAPIにアクセスする_正常系
+2026/05/07 00:57:43 INFO http request method=GET path=/health status=200 duration_ms=0
+--- PASS: TestIntegration_ヘルスチェックAPIにアクセスする_正常系 (0.00s)
+=== RUN   TestIntegration_CreateSystemOverview_通常のテキストでシステム概要を保存する_正常系
+2026/05/07 00:57:43 INFO http request method=POST path=/api/v1/system-overviews status=201 duration_ms=0
+--- PASS: TestIntegration_CreateSystemOverview_通常のテキストでシステム概要を保存する_正常系 (0.00s)
+=== RUN   TestIntegration_CreateSystemOverview_空文字でシステム概要を保存する_異常系
+2026/05/07 00:57:43 INFO http request method=POST path=/api/v1/system-overviews status=422 duration_ms=0
+--- PASS: TestIntegration_CreateSystemOverview_空文字でシステム概要を保存する_異常系 (0.00s)
+=== RUN   TestIntegration_GetByID_存在しないUUIDでシステム概要を取得する_異常系
+2026/05/07 00:57:43 INFO http request method=GET path=/api/v1/system-overviews/ad551fa3-3d75-427f-affa-1db15af08158 status=404 duration_ms=0
+--- PASS: TestIntegration_GetByID_存在しないUUIDでシステム概要を取得する_異常系 (0.00s)
+=== RUN   TestIntegration_CORS_システム概要作成APIのCORSヘッダーを確認する_連携
+2026/05/07 00:57:43 INFO http request method=OPTIONS path=/api/v1/system-overviews status=204 duration_ms=0
+--- PASS: TestIntegration_CORS_システム概要作成APIのCORSヘッダーを確認する_連携 (0.00s)
+PASS
+ok  	musuhi-api/test/integration	0.376s
 
 [終了コード] 0
