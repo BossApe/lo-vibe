@@ -47,11 +47,17 @@ func main() {
 	soSvc := service.NewSystemOverviewService(soRepo)
 	soHandler := handler.NewSystemOverviewHandler(soSvc)
 
+	projectSvc := service.NewProjectService(soRepo)
+	projectHandler := handler.NewProjectHandler(projectSvc)
+
 	// ルーティング（Go 1.22 enhanced ServeMux）
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /health", handler.HealthHandler)
 	mux.HandleFunc("POST /api/v1/system-overviews", soHandler.Create)
 	mux.HandleFunc("GET /api/v1/system-overviews/{id}", soHandler.GetByID)
+	mux.HandleFunc("POST /api/v1/projects/extract-features", projectHandler.ExtractFeatures)
+	mux.HandleFunc("POST /api/v1/projects/suggest-name", projectHandler.SuggestName)
+	mux.HandleFunc("POST /api/v1/projects/init-directory", projectHandler.InitDirectory)
 
 	// ミドルウェアチェーン
 	h := middleware.Logger(middleware.CORS(mux))

@@ -1,0 +1,131 @@
+package service
+
+import (
+	"context"
+	"errors"
+	"os"
+	"path/filepath"
+	"testing"
+	"time"
+
+	"musuhi-api/internal/model"
+
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+)
+
+type mockProjectOverviewRepository struct {
+	mock.Mock
+}
+
+func (m *mockProjectOverviewRepository) Create(ctx context.Context, content string) (*model.SystemOverview, error) {
+	args := m.Called(ctx, content)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.SystemOverview), args.Error(1)
+}
+
+func (m *mockProjectOverviewRepository) FindByID(ctx context.Context, id uuid.UUID) (*model.SystemOverview, error) {
+	args := m.Called(ctx, id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.SystemOverview), args.Error(1)
+}
+
+func TestProjectService_ExtractFeatures_OK(t *testing.T) {
+	repo := new(mockProjectOverviewRepository)
+	svc := NewProjectService(repo)
+	overviewID := uuid.New()
+
+	repo.On("FindByID", mock.Anything, overviewID).Return(
+		&model.SystemOverview{ID: overviewID, Content: "- ユーザ管理\n- 商品表示\n- PostgreSQL", CreatedAt: time.Now()},
+		nil,
+	)
+
+	got, err := svc.ExtractFeatures(context.Background(), overviewID.String())
+	assert.NoError(t, err)
+	assert.Contains(t, got.Features, "ユーザ管理")
+	assert.NotEmpty(t, got.Components)
+	repo.AssertExpectations(t)
+}
+
+func TestProjectService_SuggestName_NotFound(t *testing.T) {
+	repo := new(mockProjectOverviewRepository)
+	svc := NewProjectService(repo)
+	overviewID := uuid.New()
+
+	repo.On("FindByID", mock.Anything, overviewID).Return(nil, pgx.ErrNoRows)
+
+	_, err := svc.SuggestName(context.Background(), overviewID.String())
+	assert.ErrorIs(t, err, ErrNotFound)
+}
+
+func TestProjectService_InitDirectory_OK(t *testing.T) {
+	repo := new(mockProjectOverviewRepository)
+	svc := NewProjectService(repo)
+
+	tmp := t.TempDir()
+	result, err := svc.InitDirectory(context.Background(), "demo_project", tmp, "default")
+	assert.NoError(t, err)
+	assert.Equal(t, "success", result.DirectoryStatus)
+
+	root := filepath.Join(tmp, "demo_project")
+	_, statErr := os.Stat(filepath.Join(root, "_document/000.進捗状況/.keep"))
+	assert.NoError(t, statErr)
+
+	// README.md が生成されていること
+	readmeContent, readErr := os.ReadFile(filepath.Join(root, "README.md"))
+	assert.NoError(t, readErr)
+	assert.Contains(t, string(readmeContent), "demo_project")
+}
+
+func TestProjectService_SuggestName_OK(t *testing.T) {
+	repo := new(mockProjectOverviewRepository)
+	svc := NewProjectService(repo)
+	overviewID := uuid.New()
+
+	repo.On("FindByID", mock.Anything, overviewID).Return(
+		&model.SystemOverview{ID: overviewID, Content: "書籍管理システム\n- ユーザ登録\n- 本棚表示", CreatedAt: time.Now()},
+		nil,
+	)
+
+	got, err := svc.SuggestName(context.Background(), overviewID.String())
+	assert.NoError(t, err)
+	assert.NotEmpty(t, got.Candidates)
+	// 候補名は英数字・ハイフン・アンダースコア形式であること
+	for _, c := range got.Candidates {
+		assert.Regexp(t, `^[a-zA-Z0-9][a-zA-Z0-9_-]*$`, c)
+	}
+	repo.AssertExpectations(t)
+}
+
+func TestProjectService_InitDirectory_InvalidPath(t *testing.T) {
+	repo := new(mockProjectOverviewRepository)
+	svc := NewProjectService(repo)
+
+	_, err := svc.InitDirectory(context.Background(), "demo_project", "relative/path", "default")
+	assert.ErrorIs(t, err, ErrValidation)
+}
+
+func TestProjectService_ExtractFeatures_InvalidUUID(t *testing.T) {
+	repo := new(mockProjectOverviewRepository)
+	svc := NewProjectService(repo)
+
+	_, err := svc.ExtractFeatures(context.Background(), "bad-id")
+	assert.ErrorIs(t, err, ErrValidation)
+}
+
+func TestProjectService_LoadOverview_RepositoryError(t *testing.T) {
+	repo := new(mockProjectOverviewRepository)
+	svc := NewProjectService(repo)
+	overviewID := uuid.New()
+
+	repo.On("FindByID", mock.Anything, overviewID).Return(nil, errors.New("db down"))
+
+	_, err := svc.ExtractFeatures(context.Background(), overviewID.String())
+	assert.Error(t, err)
+}

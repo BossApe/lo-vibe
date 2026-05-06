@@ -5,6 +5,7 @@
 	let content = $state('');
 	let errorMessage = $state('');
 	let successMessage = $state('');
+	let createdOverviewId = $state('');
 	let isSubmitting = $state(false);
 
 	function validate(): string {
@@ -21,6 +22,7 @@
 		e.preventDefault();
 		errorMessage = '';
 		successMessage = '';
+		createdOverviewId = '';
 
 		const validationError = validate();
 		if (validationError) {
@@ -38,7 +40,8 @@
 
 			if (res.status === 201) {
 				const data = await res.json();
-				successMessage = `保存しました（ID: ${data.data.id}）`;
+				createdOverviewId = data.data.id;
+				successMessage = `保存しました（ID: ${createdOverviewId}）`;
 				content = '';
 			} else if (res.status === 422) {
 				const data = await res.json();
@@ -92,6 +95,11 @@
 		{#if successMessage}
 			<div class="alert alert-success" role="status">
 				{successMessage}
+				{#if createdOverviewId}
+					<div class="next-link">
+						<a href={`/projects/setup?overviewId=${createdOverviewId}`}>次へ: プロジェクト名・構成要素確認へ進む</a>
+					</div>
+				{/if}
 			</div>
 		{/if}
 
@@ -182,6 +190,15 @@
 		background: #f0fff4;
 		border: 1px solid #0a0;
 		color: #050;
+	}
+
+	.next-link {
+		margin-top: 0.4rem;
+	}
+
+	.next-link a {
+		color: #0645ad;
+		text-decoration: underline;
 	}
 
 	.actions {
