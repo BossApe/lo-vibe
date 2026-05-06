@@ -10,9 +10,6 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [
-    "onCommand:openInIntegratedBrowser.open"
-  ],
   "main": "./extension.js",
   "contributes": {
     "commands": [
