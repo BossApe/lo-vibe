@@ -1,0 +1,8 @@
+[実行日時] 2026-05-07 00:54:59
+[対象ID] SPR-1-1
+[テスト種別] セキュリティテスト
+[コマンド] echo security-test-dummy
+
+security-test-dummy
+
+[終了コード] 0

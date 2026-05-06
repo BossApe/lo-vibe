@@ -1,0 +1,8 @@
+[実行日時] 2026-05-07 00:54:50
+[対象ID] MRG-123
+[テスト種別] 回帰テスト
+[コマンド] echo regression-test-dummy
+
+regression-test-dummy
+
+[終了コード] 0

@@ -60,7 +60,7 @@ func newProjectTestServer(svc service.ProjectService) *httptest.Server {
 
 // --- ExtractFeatures ---
 
-func TestIntegration_ExtractFeatures_OK(t *testing.T) {
+func TestIntegration_ExtractFeatures_有効な概要IDから機能一覧と構成要素を抽出する_正常系(t *testing.T) {
 	svc := new(mockProjectService)
 	overviewID := uuid.New().String()
 	svc.On("ExtractFeatures", mock.Anything, overviewID).Return(
@@ -87,7 +87,7 @@ func TestIntegration_ExtractFeatures_OK(t *testing.T) {
 	svc.AssertExpectations(t)
 }
 
-func TestIntegration_ExtractFeatures_ValidationError(t *testing.T) {
+func TestIntegration_ExtractFeatures_概要IDを空で指定して機能一覧を抽出する_異常系(t *testing.T) {
 	svc := new(mockProjectService)
 	svc.On("ExtractFeatures", mock.Anything, "").Return(
 		nil, fmt.Errorf("%w: overviewId is required", service.ErrValidation),
@@ -106,7 +106,7 @@ func TestIntegration_ExtractFeatures_ValidationError(t *testing.T) {
 	svc.AssertExpectations(t)
 }
 
-func TestIntegration_ExtractFeatures_NotFound(t *testing.T) {
+func TestIntegration_ExtractFeatures_存在しない概要IDから機能一覧を抽出する_異常系(t *testing.T) {
 	svc := new(mockProjectService)
 	overviewID := uuid.New().String()
 	svc.On("ExtractFeatures", mock.Anything, overviewID).Return(
@@ -127,7 +127,7 @@ func TestIntegration_ExtractFeatures_NotFound(t *testing.T) {
 	svc.AssertExpectations(t)
 }
 
-func TestIntegration_ExtractFeatures_BadRequest(t *testing.T) {
+func TestIntegration_ExtractFeatures_不正なJSONで機能一覧を抽出する_異常系(t *testing.T) {
 	svc := new(mockProjectService)
 	srv := newProjectTestServer(svc)
 	defer srv.Close()
@@ -144,7 +144,7 @@ func TestIntegration_ExtractFeatures_BadRequest(t *testing.T) {
 
 // --- SuggestName ---
 
-func TestIntegration_SuggestName_OK(t *testing.T) {
+func TestIntegration_SuggestName_有効な概要IDからプロジェクト名候補を取得する_正常系(t *testing.T) {
 	svc := new(mockProjectService)
 	overviewID := uuid.New().String()
 	svc.On("SuggestName", mock.Anything, overviewID).Return(
@@ -167,7 +167,7 @@ func TestIntegration_SuggestName_OK(t *testing.T) {
 	svc.AssertExpectations(t)
 }
 
-func TestIntegration_SuggestName_ValidationError(t *testing.T) {
+func TestIntegration_SuggestName_概要IDを空で指定してプロジェクト名候補を取得する_異常系(t *testing.T) {
 	svc := new(mockProjectService)
 	svc.On("SuggestName", mock.Anything, "").Return(
 		nil, fmt.Errorf("%w: overviewId is required", service.ErrValidation),
@@ -186,7 +186,7 @@ func TestIntegration_SuggestName_ValidationError(t *testing.T) {
 	svc.AssertExpectations(t)
 }
 
-func TestIntegration_SuggestName_NotFound(t *testing.T) {
+func TestIntegration_SuggestName_存在しない概要IDからプロジェクト名候補を取得する_異常系(t *testing.T) {
 	svc := new(mockProjectService)
 	overviewID := uuid.New().String()
 	svc.On("SuggestName", mock.Anything, overviewID).Return(
@@ -207,7 +207,7 @@ func TestIntegration_SuggestName_NotFound(t *testing.T) {
 	svc.AssertExpectations(t)
 }
 
-func TestIntegration_SuggestName_BadRequest(t *testing.T) {
+func TestIntegration_SuggestName_不正なJSONでプロジェクト名候補を取得する_異常系(t *testing.T) {
 	svc := new(mockProjectService)
 	srv := newProjectTestServer(svc)
 	defer srv.Close()
@@ -224,7 +224,7 @@ func TestIntegration_SuggestName_BadRequest(t *testing.T) {
 
 // --- InitDirectory ---
 
-func TestIntegration_InitDirectory_OK(t *testing.T) {
+func TestIntegration_InitDirectory_有効な入力で初期ディレクトリを作成する_正常系(t *testing.T) {
 	svc := new(mockProjectService)
 	id := uuid.New()
 	svc.On("InitDirectory", mock.Anything, "demo-project", "/tmp/musuhi", "default").Return(
@@ -246,7 +246,7 @@ func TestIntegration_InitDirectory_OK(t *testing.T) {
 	svc.AssertExpectations(t)
 }
 
-func TestIntegration_InitDirectory_ValidationError(t *testing.T) {
+func TestIntegration_InitDirectory_不正なプロジェクト名で初期ディレクトリを作成する_異常系(t *testing.T) {
 	svc := new(mockProjectService)
 	svc.On("InitDirectory", mock.Anything, "bad name!", "/tmp/musuhi", "default").Return(
 		nil, fmt.Errorf("%w: projectName must match pattern", service.ErrValidation),
@@ -266,7 +266,7 @@ func TestIntegration_InitDirectory_ValidationError(t *testing.T) {
 	svc.AssertExpectations(t)
 }
 
-func TestIntegration_InitDirectory_BadRequest(t *testing.T) {
+func TestIntegration_InitDirectory_不正なJSONで初期ディレクトリを作成する_異常系(t *testing.T) {
 	svc := new(mockProjectService)
 	srv := newProjectTestServer(svc)
 	defer srv.Close()

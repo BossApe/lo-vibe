@@ -39,7 +39,7 @@ func (m *mockSystemOverviewService) GetByID(ctx context.Context, rawID string) (
 	return args.Get(0).(*model.SystemOverview), args.Error(1)
 }
 
-func TestSystemOverviewHandler_Create_OK(t *testing.T) {
+func TestSystemOverviewHandler_Create_システム概要に通常のテキストを入力して保存する_正常系(t *testing.T) {
 	svc := new(mockSystemOverviewService)
 	h := NewSystemOverviewHandler(svc)
 
@@ -64,7 +64,7 @@ func TestSystemOverviewHandler_Create_OK(t *testing.T) {
 	svc.AssertExpectations(t)
 }
 
-func TestSystemOverviewHandler_Create_ValidationError(t *testing.T) {
+func TestSystemOverviewHandler_Create_システム概要を空文字で入力して保存する_異常系(t *testing.T) {
 	svc := new(mockSystemOverviewService)
 	h := NewSystemOverviewHandler(svc)
 
@@ -80,7 +80,7 @@ func TestSystemOverviewHandler_Create_ValidationError(t *testing.T) {
 	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
 }
 
-func TestSystemOverviewHandler_GetByID_OK(t *testing.T) {
+func TestSystemOverviewHandler_GetByID_有効なUUIDでシステム概要を取得する_正常系(t *testing.T) {
 	svc := new(mockSystemOverviewService)
 	h := NewSystemOverviewHandler(svc)
 
@@ -105,7 +105,7 @@ func TestSystemOverviewHandler_GetByID_OK(t *testing.T) {
 	svc.AssertExpectations(t)
 }
 
-func TestSystemOverviewHandler_GetByID_NotFound(t *testing.T) {
+func TestSystemOverviewHandler_GetByID_存在しないUUIDでシステム概要を取得する_異常系(t *testing.T) {
 	svc := new(mockSystemOverviewService)
 	h := NewSystemOverviewHandler(svc)
 

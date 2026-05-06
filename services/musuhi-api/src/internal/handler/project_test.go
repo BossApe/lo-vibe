@@ -45,7 +45,7 @@ func (m *mockProjectService) InitDirectory(ctx context.Context, projectName, loc
 	return args.Get(0).(*model.ProjectInitResult), args.Error(1)
 }
 
-func TestProjectHandler_ExtractFeatures_OK(t *testing.T) {
+func TestProjectHandler_ExtractFeatures_有効な概要IDから機能一覧と構成要素を抽出する_正常系(t *testing.T) {
 	svc := new(mockProjectService)
 	h := NewProjectHandler(svc)
 	overviewID := uuid.New().String()
@@ -67,7 +67,7 @@ func TestProjectHandler_ExtractFeatures_OK(t *testing.T) {
 	svc.AssertExpectations(t)
 }
 
-func TestProjectHandler_SuggestName_ValidationError(t *testing.T) {
+func TestProjectHandler_SuggestName_概要IDを空で指定してプロジェクト名候補を取得する_異常系(t *testing.T) {
 	svc := new(mockProjectService)
 	h := NewProjectHandler(svc)
 	svc.On("SuggestName", mock.Anything, "").Return(nil, fmt.Errorf("%w: overviewId is required", service.ErrValidation))
@@ -80,7 +80,7 @@ func TestProjectHandler_SuggestName_ValidationError(t *testing.T) {
 	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
 }
 
-func TestProjectHandler_InitDirectory_OK(t *testing.T) {
+func TestProjectHandler_InitDirectory_有効な入力で初期ディレクトリを作成する_正常系(t *testing.T) {
 	svc := new(mockProjectService)
 	h := NewProjectHandler(svc)
 	id := uuid.New()
@@ -102,7 +102,7 @@ func TestProjectHandler_InitDirectory_OK(t *testing.T) {
 	svc.AssertExpectations(t)
 }
 
-func TestProjectHandler_SuggestName_OK(t *testing.T) {
+func TestProjectHandler_SuggestName_有効な概要IDからプロジェクト名候補を取得する_正常系(t *testing.T) {
 	svc := new(mockProjectService)
 	h := NewProjectHandler(svc)
 	overviewID := uuid.New().String()
@@ -124,7 +124,7 @@ func TestProjectHandler_SuggestName_OK(t *testing.T) {
 	svc.AssertExpectations(t)
 }
 
-func TestProjectHandler_InitDirectory_ValidationError(t *testing.T) {
+func TestProjectHandler_InitDirectory_不正なプロジェクト名で初期ディレクトリを作成する_異常系(t *testing.T) {
 	svc := new(mockProjectService)
 	h := NewProjectHandler(svc)
 	svc.On("InitDirectory", mock.Anything, "bad name!", "/tmp", "default").Return(
@@ -140,7 +140,7 @@ func TestProjectHandler_InitDirectory_ValidationError(t *testing.T) {
 	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
 }
 
-func TestProjectHandler_ExtractFeatures_NotFound(t *testing.T) {
+func TestProjectHandler_ExtractFeatures_存在しない概要IDから機能一覧を抽出する_異常系(t *testing.T) {
 	svc := new(mockProjectService)
 	h := NewProjectHandler(svc)
 	overviewID := uuid.New().String()

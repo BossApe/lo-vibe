@@ -50,7 +50,7 @@ func newTestServer(svc service.SystemOverviewService) *httptest.Server {
 	return httptest.NewServer(h)
 }
 
-func TestIntegration_HealthCheck(t *testing.T) {
+func TestIntegration_ヘルスチェックAPIにアクセスする_正常系(t *testing.T) {
 	svc := new(mockSystemOverviewService)
 	srv := newTestServer(svc)
 	defer srv.Close()
@@ -60,7 +60,7 @@ func TestIntegration_HealthCheck(t *testing.T) {
 	assert.Equal(t, http.StatusOK, res.StatusCode)
 }
 
-func TestIntegration_CreateSystemOverview_OK(t *testing.T) {
+func TestIntegration_CreateSystemOverview_通常のテキストでシステム概要を保存する_正常系(t *testing.T) {
 	svc := new(mockSystemOverviewService)
 	id := uuid.New()
 	svc.On("Create", mock.Anything, "結合テスト用システム概要").Return(
@@ -82,7 +82,7 @@ func TestIntegration_CreateSystemOverview_OK(t *testing.T) {
 	svc.AssertExpectations(t)
 }
 
-func TestIntegration_CreateSystemOverview_ValidationError(t *testing.T) {
+func TestIntegration_CreateSystemOverview_空文字でシステム概要を保存する_異常系(t *testing.T) {
 	svc := new(mockSystemOverviewService)
 	svc.On("Create", mock.Anything, "").Return(nil, service.ErrValidation)
 	srv := newTestServer(svc)
@@ -99,7 +99,7 @@ func TestIntegration_CreateSystemOverview_ValidationError(t *testing.T) {
 	assert.Equal(t, "VALIDATION_ERROR", errBody["code"])
 }
 
-func TestIntegration_GetByID_NotFound(t *testing.T) {
+func TestIntegration_GetByID_存在しないUUIDでシステム概要を取得する_異常系(t *testing.T) {
 	svc := new(mockSystemOverviewService)
 	id := uuid.New()
 	svc.On("GetByID", mock.Anything, id.String()).Return(nil, service.ErrNotFound)
@@ -117,7 +117,7 @@ func TestIntegration_GetByID_NotFound(t *testing.T) {
 	svc.AssertExpectations(t)
 }
 
-func TestIntegration_CORS_Headers(t *testing.T) {
+func TestIntegration_CORS_システム概要作成APIのCORSヘッダーを確認する_連携(t *testing.T) {
 	svc := new(mockSystemOverviewService)
 	srv := newTestServer(svc)
 	defer srv.Close()

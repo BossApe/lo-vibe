@@ -36,7 +36,7 @@ func (m *mockProjectOverviewRepository) FindByID(ctx context.Context, id uuid.UU
 	return args.Get(0).(*model.SystemOverview), args.Error(1)
 }
 
-func TestProjectService_ExtractFeatures_OK(t *testing.T) {
+func TestProjectService_ExtractFeatures_有効な概要IDから機能一覧と構成要素を抽出する_正常系(t *testing.T) {
 	repo := new(mockProjectOverviewRepository)
 	svc := NewProjectService(repo)
 	overviewID := uuid.New()
@@ -53,7 +53,7 @@ func TestProjectService_ExtractFeatures_OK(t *testing.T) {
 	repo.AssertExpectations(t)
 }
 
-func TestProjectService_SuggestName_NotFound(t *testing.T) {
+func TestProjectService_SuggestName_存在しない概要IDからプロジェクト名候補を取得する_異常系(t *testing.T) {
 	repo := new(mockProjectOverviewRepository)
 	svc := NewProjectService(repo)
 	overviewID := uuid.New()
@@ -64,7 +64,7 @@ func TestProjectService_SuggestName_NotFound(t *testing.T) {
 	assert.ErrorIs(t, err, ErrNotFound)
 }
 
-func TestProjectService_InitDirectory_OK(t *testing.T) {
+func TestProjectService_InitDirectory_有効なプロジェクト名と絶対パスで初期ディレクトリを作成する_正常系(t *testing.T) {
 	repo := new(mockProjectOverviewRepository)
 	svc := NewProjectService(repo)
 
@@ -83,7 +83,7 @@ func TestProjectService_InitDirectory_OK(t *testing.T) {
 	assert.Contains(t, string(readmeContent), "demo_project")
 }
 
-func TestProjectService_SuggestName_OK(t *testing.T) {
+func TestProjectService_SuggestName_有効な概要IDからプロジェクト名候補を取得する_正常系(t *testing.T) {
 	repo := new(mockProjectOverviewRepository)
 	svc := NewProjectService(repo)
 	overviewID := uuid.New()
@@ -103,7 +103,7 @@ func TestProjectService_SuggestName_OK(t *testing.T) {
 	repo.AssertExpectations(t)
 }
 
-func TestProjectService_InitDirectory_InvalidPath(t *testing.T) {
+func TestProjectService_InitDirectory_相対パスで初期ディレクトリを作成する_異常系(t *testing.T) {
 	repo := new(mockProjectOverviewRepository)
 	svc := NewProjectService(repo)
 
@@ -111,7 +111,7 @@ func TestProjectService_InitDirectory_InvalidPath(t *testing.T) {
 	assert.ErrorIs(t, err, ErrValidation)
 }
 
-func TestProjectService_ExtractFeatures_InvalidUUID(t *testing.T) {
+func TestProjectService_ExtractFeatures_UUID形式ではない概要IDから機能一覧を抽出する_異常系(t *testing.T) {
 	repo := new(mockProjectOverviewRepository)
 	svc := NewProjectService(repo)
 
@@ -119,7 +119,7 @@ func TestProjectService_ExtractFeatures_InvalidUUID(t *testing.T) {
 	assert.ErrorIs(t, err, ErrValidation)
 }
 
-func TestProjectService_LoadOverview_RepositoryError(t *testing.T) {
+func TestProjectService_ExtractFeatures_概要取得時にリポジトリエラーが発生した状態で機能一覧を抽出する_異常系(t *testing.T) {
 	repo := new(mockProjectOverviewRepository)
 	svc := NewProjectService(repo)
 	overviewID := uuid.New()

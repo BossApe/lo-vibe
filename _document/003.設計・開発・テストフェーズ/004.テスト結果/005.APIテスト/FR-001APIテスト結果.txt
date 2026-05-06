@@ -1,0 +1,8 @@
+[実行日時] 2026-05-07 00:54:50
+[対象ID] FR-001
+[テスト種別] APIテスト
+[コマンド] echo api-test-dummy
+
+api-test-dummy
+
+[終了コード] 0

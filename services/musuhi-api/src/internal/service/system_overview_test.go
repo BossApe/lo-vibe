@@ -34,7 +34,7 @@ func (m *mockSystemOverviewRepository) FindByID(ctx context.Context, id uuid.UUI
 	return args.Get(0).(*model.SystemOverview), args.Error(1)
 }
 
-func TestSystemOverviewService_Create_OK(t *testing.T) {
+func TestSystemOverviewService_Create_システム概要に通常のテキストを入力して保存する_正常系(t *testing.T) {
 	repo := new(mockSystemOverviewRepository)
 	svc := NewSystemOverviewService(repo)
 
@@ -51,7 +51,7 @@ func TestSystemOverviewService_Create_OK(t *testing.T) {
 	repo.AssertExpectations(t)
 }
 
-func TestSystemOverviewService_Create_EmptyContent(t *testing.T) {
+func TestSystemOverviewService_Create_システム概要を空文字で入力して保存する_異常系(t *testing.T) {
 	repo := new(mockSystemOverviewRepository)
 	svc := NewSystemOverviewService(repo)
 
@@ -60,7 +60,7 @@ func TestSystemOverviewService_Create_EmptyContent(t *testing.T) {
 	repo.AssertNotCalled(t, "Create")
 }
 
-func TestSystemOverviewService_Create_TooLongContent(t *testing.T) {
+func TestSystemOverviewService_Create_システム概要に4097文字を入力して保存する_境界値(t *testing.T) {
 	repo := new(mockSystemOverviewRepository)
 	svc := NewSystemOverviewService(repo)
 
@@ -75,7 +75,7 @@ func TestSystemOverviewService_Create_TooLongContent(t *testing.T) {
 	repo.AssertNotCalled(t, "Create")
 }
 
-func TestSystemOverviewService_GetByID_OK(t *testing.T) {
+func TestSystemOverviewService_GetByID_有効なUUIDでシステム概要を取得する_正常系(t *testing.T) {
 	repo := new(mockSystemOverviewRepository)
 	svc := NewSystemOverviewService(repo)
 
@@ -90,7 +90,7 @@ func TestSystemOverviewService_GetByID_OK(t *testing.T) {
 	repo.AssertExpectations(t)
 }
 
-func TestSystemOverviewService_GetByID_InvalidUUID(t *testing.T) {
+func TestSystemOverviewService_GetByID_UUID形式ではないIDでシステム概要を取得する_異常系(t *testing.T) {
 	repo := new(mockSystemOverviewRepository)
 	svc := NewSystemOverviewService(repo)
 
@@ -99,7 +99,7 @@ func TestSystemOverviewService_GetByID_InvalidUUID(t *testing.T) {
 	repo.AssertNotCalled(t, "FindByID")
 }
 
-func TestSystemOverviewService_GetByID_NotFound(t *testing.T) {
+func TestSystemOverviewService_GetByID_存在しないUUIDでシステム概要を取得する_異常系(t *testing.T) {
 	repo := new(mockSystemOverviewRepository)
 	svc := NewSystemOverviewService(repo)
 
