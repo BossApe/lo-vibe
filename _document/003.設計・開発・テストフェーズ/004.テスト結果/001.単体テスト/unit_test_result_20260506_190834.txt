@@ -1,0 +1,55 @@
+[実行日時] 2026-05-06 19:08:34
+[対象] #25(SystemOverview), #26(Project)
+[コマンド] go test ./internal/handler ./internal/service -run 'Project|SystemOverview' -v
+
+warning: GOPATH set to GOROOT (/Users/noharamasaki/go) has no effect
+=== RUN   TestProjectHandler_ExtractFeatures_OK
+--- PASS: TestProjectHandler_ExtractFeatures_OK (0.00s)
+=== RUN   TestProjectHandler_SuggestName_ValidationError
+--- PASS: TestProjectHandler_SuggestName_ValidationError (0.00s)
+=== RUN   TestProjectHandler_InitDirectory_OK
+--- PASS: TestProjectHandler_InitDirectory_OK (0.00s)
+=== RUN   TestProjectHandler_SuggestName_OK
+--- PASS: TestProjectHandler_SuggestName_OK (0.00s)
+=== RUN   TestProjectHandler_InitDirectory_ValidationError
+--- PASS: TestProjectHandler_InitDirectory_ValidationError (0.00s)
+=== RUN   TestProjectHandler_ExtractFeatures_NotFound
+--- PASS: TestProjectHandler_ExtractFeatures_NotFound (0.00s)
+=== RUN   TestSystemOverviewHandler_Create_OK
+--- PASS: TestSystemOverviewHandler_Create_OK (0.00s)
+=== RUN   TestSystemOverviewHandler_Create_ValidationError
+--- PASS: TestSystemOverviewHandler_Create_ValidationError (0.00s)
+=== RUN   TestSystemOverviewHandler_GetByID_OK
+--- PASS: TestSystemOverviewHandler_GetByID_OK (0.00s)
+=== RUN   TestSystemOverviewHandler_GetByID_NotFound
+--- PASS: TestSystemOverviewHandler_GetByID_NotFound (0.00s)
+PASS
+ok  	musuhi-api/internal/handler	(cached)
+=== RUN   TestProjectService_ExtractFeatures_OK
+--- PASS: TestProjectService_ExtractFeatures_OK (0.00s)
+=== RUN   TestProjectService_SuggestName_NotFound
+--- PASS: TestProjectService_SuggestName_NotFound (0.00s)
+=== RUN   TestProjectService_InitDirectory_OK
+--- PASS: TestProjectService_InitDirectory_OK (0.00s)
+=== RUN   TestProjectService_SuggestName_OK
+--- PASS: TestProjectService_SuggestName_OK (0.00s)
+=== RUN   TestProjectService_InitDirectory_InvalidPath
+--- PASS: TestProjectService_InitDirectory_InvalidPath (0.00s)
+=== RUN   TestProjectService_ExtractFeatures_InvalidUUID
+--- PASS: TestProjectService_ExtractFeatures_InvalidUUID (0.00s)
+=== RUN   TestProjectService_LoadOverview_RepositoryError
+--- PASS: TestProjectService_LoadOverview_RepositoryError (0.00s)
+=== RUN   TestSystemOverviewService_Create_OK
+--- PASS: TestSystemOverviewService_Create_OK (0.00s)
+=== RUN   TestSystemOverviewService_Create_EmptyContent
+--- PASS: TestSystemOverviewService_Create_EmptyContent (0.00s)
+=== RUN   TestSystemOverviewService_Create_TooLongContent
+--- PASS: TestSystemOverviewService_Create_TooLongContent (0.00s)
+=== RUN   TestSystemOverviewService_GetByID_OK
+--- PASS: TestSystemOverviewService_GetByID_OK (0.00s)
+=== RUN   TestSystemOverviewService_GetByID_InvalidUUID
+--- PASS: TestSystemOverviewService_GetByID_InvalidUUID (0.00s)
+=== RUN   TestSystemOverviewService_GetByID_NotFound
+--- PASS: TestSystemOverviewService_GetByID_NotFound (0.00s)
+PASS
+ok  	musuhi-api/internal/service	(cached)
