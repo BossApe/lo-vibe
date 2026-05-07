@@ -107,7 +107,13 @@ func TestProjectHandler_SuggestName_有効な概要IDからプロジェクト名
 	h := NewProjectHandler(svc)
 	overviewID := uuid.New().String()
 	svc.On("SuggestName", mock.Anything, overviewID).Return(
-		&model.ProjectNameSuggestion{Candidates: []string{"book-app", "book-core"}},
+		&model.ProjectNameSuggestion{
+			Candidates: []string{"sukunahikona", "watatsumi"},
+			Items: []model.ProjectNameCandidate{
+				{Name: "sukunahikona", Reason: "旅行支援に合う神名", AISuggested: true},
+				{Name: "watatsumi", Reason: "移動の広がりを表す神名", AISuggested: true},
+			},
+		},
 		nil,
 	)
 
@@ -121,6 +127,9 @@ func TestProjectHandler_SuggestName_有効な概要IDからプロジェクト名
 	assert.NoError(t, json.Unmarshal(rec.Body.Bytes(), &resp))
 	data := resp["data"].(map[string]any)
 	assert.NotEmpty(t, data["candidates"])
+	items := data["items"].([]any)
+	assert.NotEmpty(t, items)
+	assert.Equal(t, "sukunahikona", items[0].(map[string]any)["name"])
 	svc.AssertExpectations(t)
 }
 

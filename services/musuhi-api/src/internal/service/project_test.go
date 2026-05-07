@@ -69,16 +69,16 @@ func TestProjectService_InitDirectory_有効なプロジェクト名と絶対パ
 	svc := NewProjectService(repo)
 
 	tmp := t.TempDir()
-	result, err := svc.InitDirectory(context.Background(), "demo_project", tmp, "default")
+	target := filepath.Join(tmp, "demo_project")
+	result, err := svc.InitDirectory(context.Background(), "demo_project", target, "default")
 	assert.NoError(t, err)
 	assert.Equal(t, "success", result.DirectoryStatus)
 
-	root := filepath.Join(tmp, "demo_project")
-	_, statErr := os.Stat(filepath.Join(root, "_document/000.進捗状況/.keep"))
+	_, statErr := os.Stat(filepath.Join(target, "_document/000.進捗状況/.keep"))
 	assert.NoError(t, statErr)
 
 	// README.md が生成されていること
-	readmeContent, readErr := os.ReadFile(filepath.Join(root, "README.md"))
+	readmeContent, readErr := os.ReadFile(filepath.Join(target, "README.md"))
 	assert.NoError(t, readErr)
 	assert.Contains(t, string(readmeContent), "demo_project")
 }
@@ -96,10 +96,56 @@ func TestProjectService_SuggestName_有効な概要IDからプロジェクト名
 	got, err := svc.SuggestName(context.Background(), overviewID.String())
 	assert.NoError(t, err)
 	assert.NotEmpty(t, got.Candidates)
+	// 書籍キーワードが含まれるので先頭候補は "shoseki"
+	assert.Equal(t, "shoseki", got.Candidates[0])
+	assert.NotEmpty(t, got.Items)
+	assert.Equal(t, "shoseki", got.Items[0].Name)
+	assert.False(t, got.Items[0].AISuggested)
+	assert.Empty(t, got.Items[0].Reason)
 	// 候補名は英数字・ハイフン・アンダースコア形式であること
 	for _, c := range got.Candidates {
 		assert.Regexp(t, `^[a-zA-Z0-9][a-zA-Z0-9_-]*$`, c)
 	}
+	repo.AssertExpectations(t)
+}
+
+func TestProjectService_SuggestName_システム名なしのテーマ概要から神名候補が返る_正常系(t *testing.T) {
+	repo := new(mockProjectOverviewRepository)
+	svc := NewProjectService(repo)
+	overviewID := uuid.New()
+
+	// 旅行キーワード → sukunahikona が先頭に来ること
+	// （旅行・観光はsystemNameRomajiに登録されていないためテーマ候補が選ばれる）
+	repo.On("FindByID", mock.Anything, overviewID).Return(
+		&model.SystemOverview{ID: overviewID, Content: "- 旅行プラン提案\n- 観光スポット検索\n- 地図表示", CreatedAt: time.Now()},
+		nil,
+	)
+
+	got, err := svc.SuggestName(context.Background(), overviewID.String())
+	assert.NoError(t, err)
+	assert.NotEmpty(t, got.Candidates)
+	assert.Equal(t, "sukunahikona", got.Candidates[0])
+	assert.NotEmpty(t, got.Items)
+	assert.Equal(t, "sukunahikona", got.Items[0].Name)
+	assert.True(t, got.Items[0].AISuggested)
+	assert.NotEmpty(t, got.Items[0].Reason)
+	repo.AssertExpectations(t)
+}
+
+func TestProjectService_SuggestName_該当キーワードなし時にフォールバック候補が返る_正常系(t *testing.T) {
+	repo := new(mockProjectOverviewRepository)
+	svc := NewProjectService(repo)
+	overviewID := uuid.New()
+
+	repo.On("FindByID", mock.Anything, overviewID).Return(
+		&model.SystemOverview{ID: overviewID, Content: "概要が未定義のシステム", CreatedAt: time.Now()},
+		nil,
+	)
+
+	got, err := svc.SuggestName(context.Background(), overviewID.String())
+	assert.NoError(t, err)
+	assert.NotEmpty(t, got.Candidates)
+	assert.Equal(t, "musuhi-project", got.Candidates[0])
 	repo.AssertExpectations(t)
 }
 

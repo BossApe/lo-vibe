@@ -1,12 +1,40 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
+	import { onMount } from 'svelte';
+
 	const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080';
 	const MAX_LENGTH = 4096;
 
+	let overviewId = $state('');
 	let content = $state('');
 	let errorMessage = $state('');
-	let successMessage = $state('');
-	let createdOverviewId = $state('');
+	let isLoadingOverview = $state(false);
 	let isSubmitting = $state(false);
+
+	onMount(() => {
+		const params = new URLSearchParams(window.location.search);
+		overviewId = params.get('overviewId') ?? '';
+		if (overviewId) {
+			void loadOverview(overviewId);
+		}
+	});
+
+	async function loadOverview(id: string) {
+		isLoadingOverview = true;
+		errorMessage = '';
+		try {
+			const res = await fetch(`${API_BASE}/api/v1/system-overviews/${id}`);
+			const payload = await res.json().catch(() => ({}));
+			if (!res.ok) {
+				throw new Error(payload.error?.message ?? 'システム概要の取得に失敗しました。');
+			}
+			content = payload.data?.content ?? '';
+		} catch (e) {
+			errorMessage = e instanceof Error ? e.message : 'システム概要の取得に失敗しました。';
+		} finally {
+			isLoadingOverview = false;
+		}
+	}
 
 	function validate(): string {
 		if (!content.trim()) {
@@ -21,8 +49,6 @@
 	async function handleSubmit(e: Event) {
 		e.preventDefault();
 		errorMessage = '';
-		successMessage = '';
-		createdOverviewId = '';
 
 		const validationError = validate();
 		if (validationError) {
@@ -40,9 +66,7 @@
 
 			if (res.status === 201) {
 				const data = await res.json();
-				createdOverviewId = data.data.id;
-				successMessage = `保存しました（ID: ${createdOverviewId}）`;
-				content = '';
+				await goto(`/projects/setup?overviewId=${data.data.id}`);
 			} else if (res.status === 422) {
 				const data = await res.json();
 				errorMessage = data.error?.message ?? 'バリデーションエラーが発生しました。';
@@ -77,7 +101,7 @@
 				placeholder="例：&#10;- ユーザ管理機能&#10;- 商品カタログ表示&#10;- カート・注文機能"
 				rows={12}
 				maxlength={MAX_LENGTH}
-				disabled={isSubmitting}
+				disabled={isSubmitting || isLoadingOverview}
 				aria-describedby={errorMessage ? 'error-message' : undefined}
 				aria-invalid={!!errorMessage}
 			></textarea>
@@ -92,20 +116,9 @@
 			</div>
 		{/if}
 
-		{#if successMessage}
-			<div class="alert alert-success" role="status">
-				{successMessage}
-				{#if createdOverviewId}
-					<div class="next-link">
-						<a href={`/projects/setup?overviewId=${createdOverviewId}`}>次へ: プロジェクト名・構成要素確認へ進む</a>
-					</div>
-				{/if}
-			</div>
-		{/if}
-
 		<div class="actions">
-			<button type="submit" disabled={isSubmitting}>
-				{isSubmitting ? '保存中...' : '保存する'}
+			<button type="submit" disabled={isSubmitting || isLoadingOverview}>
+				{isSubmitting ? '保存中...' : '確定して次へ'}
 			</button>
 		</div>
 	</form>
@@ -184,21 +197,6 @@
 		background: #fff0f0;
 		border: 1px solid #c00;
 		color: #c00;
-	}
-
-	.alert-success {
-		background: #f0fff4;
-		border: 1px solid #0a0;
-		color: #050;
-	}
-
-	.next-link {
-		margin-top: 0.4rem;
-	}
-
-	.next-link a {
-		color: #0645ad;
-		text-decoration: underline;
 	}
 
 	.actions {

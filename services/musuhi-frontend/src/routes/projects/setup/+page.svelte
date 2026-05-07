@@ -1,21 +1,48 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 
+	type ProjectNameCandidate = {
+		name: string;
+		reason?: string;
+		aiSuggested: boolean;
+	};
+
 	const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080';
+	const BASE_DIR = '/Users/m.nohara/gitspace/';
 
 	let overviewId = $state('');
 	let localPath = $state('');
+	let localPathEdited = $state(false);
 	let selectedProjectName = $state('');
+
+	$effect(() => {
+		if (!localPathEdited && selectedProjectName) {
+			localPath = BASE_DIR + selectedProjectName;
+		}
+	});
 	let features = $state<string[]>([]);
 	let components = $state<string[]>([]);
 	let candidates = $state<string[]>([]);
+	let candidateItems = $state<ProjectNameCandidate[]>([]);
 	let directoryStatus = $state('');
 	let errorMessage = $state('');
 	let isLoading = $state(false);
+	let hasAutoExtracted = $state(false);
+
+	let selectedCandidate = $derived(
+		candidateItems.find((item) => item.name === selectedProjectName)
+	);
 
 	onMount(() => {
 		const params = new URLSearchParams(window.location.search);
 		overviewId = params.get('overviewId') ?? '';
+	});
+
+	$effect(() => {
+		if (!hasAutoExtracted && overviewId.trim()) {
+			hasAutoExtracted = true;
+			void handleExtract();
+		}
 	});
 
 	async function postJson(path: string, body: unknown): Promise<any> {
@@ -42,6 +69,7 @@
 
 			const nameResult = await postJson('/api/v1/projects/suggest-name', { overviewId });
 			candidates = nameResult.data?.candidates ?? [];
+			candidateItems = nameResult.data?.items ?? [];
 			if (!selectedProjectName && candidates.length > 0) {
 				selectedProjectName = candidates[0];
 			}
@@ -76,16 +104,15 @@
 </svelte:head>
 
 <main class="container">
+	<p class="back-link"><a href={`/overview?overviewId=${overviewId}`}>概要入力に戻る</a></p>
 	<h1>プロジェクト名・構成要素確認</h1>
 	<p>保存済みシステム概要から機能抽出・プロジェクト名候補生成を行い、初期ディレクトリを作成します。</p>
 
-	<div class="card">
-		<label for="overviewId">概要ID</label>
-		<input id="overviewId" bind:value={overviewId} placeholder="UUID" />
-		<button onclick={handleExtract} disabled={isLoading || !overviewId.trim()}>
-			{isLoading ? '処理中...' : '機能抽出・候補生成'}
-		</button>
-	</div>
+	{#if isLoading && features.length === 0 && candidates.length === 0 && !errorMessage}
+		<div class="card">
+			<p>システム概要をもとに機能抽出とプロジェクト名候補生成を実行しています...</p>
+		</div>
+	{/if}
 
 	{#if features.length > 0}
 		<div class="card">
@@ -107,14 +134,25 @@
 	{#if candidates.length > 0}
 		<div class="card">
 			<h2>プロジェクト名候補</h2>
-			<select bind:value={selectedProjectName}>
+			<label for="projectName">プロジェクト名（候補から選択またはキーボード入力）</label>
+			<input
+				id="projectName"
+				list="project-name-candidates"
+				bind:value={selectedProjectName}
+				placeholder="プロジェクト名を入力または候補から選択"
+			/>
+			<datalist id="project-name-candidates">
 				{#each candidates as c}
 					<option value={c}>{c}</option>
 				{/each}
-			</select>
+			</datalist>
+
+			{#if selectedCandidate?.aiSuggested && selectedCandidate.reason}
+				<p class="candidate-reason">{selectedCandidate.reason}</p>
+			{/if}
 
 			<label for="localPath">ローカル作成先パス（絶対パス）</label>
-			<input id="localPath" bind:value={localPath} placeholder="/Users/yourname/gitspace" />
+			<input id="localPath" bind:value={localPath} oninput={() => localPathEdited = true} placeholder="/Users/yourname/gitspace/プロジェクト名" />
 
 			<button onclick={handleInitDirectory} disabled={isLoading || !selectedProjectName || !localPath.trim()}>
 				{isLoading ? '作成中...' : '初期ディレクトリ作成'}
@@ -149,12 +187,33 @@
 		gap: 0.6rem;
 	}
 
-	input,
-	select {
+	.back-link {
+		margin: 0 0 0.75rem;
+	}
+
+	.back-link a {
+		color: #1663c7;
+		text-decoration: none;
+		font-size: 0.95rem;
+	}
+
+	.back-link a:hover {
+		text-decoration: underline;
+	}
+
+	input {
 		padding: 0.55rem 0.7rem;
 		font-size: 0.95rem;
 		border: 1px solid #ccc;
 		border-radius: 6px;
+	}
+
+	.candidate-reason {
+		margin: -0.1rem 0 0.2rem;
+		color: #555;
+		font-size: 0.9rem;
+		line-height: 1.6;
+		white-space: pre-line;
 	}
 
 	button {

@@ -26,8 +26,7 @@ tools/open_in_integrated_browser_ext/
 ### 1. 依存をインストール
 
 ```bash
-cd tools/open_in_integrated_browser_ext
-npm install
+pushd tools/open_in_integrated_browser_ext && npm install; popd
 ```
 
 ### 2. 拡張を起動（開発モード）
@@ -35,6 +34,24 @@ npm install
 1. VS Code で `tools/open_in_integrated_browser_ext` を開く
 2. `F5` キーで Extension Development Host を起動
 3. 開いた別ウィンドウ側で確認する
+
+### 2.5 VSIX を現在の VS Code にインストール
+
+開発モードではなく、普段使っている VS Code で使う場合は VSIX をインストールします。
+
+```bash
+cd /Users/m.nohara/gitspace/Musuhi/tools/open_in_integrated_browser_ext
+code --install-extension ./open-in-integrated-browser-0.0.1.vsix
+code --list-extensions | grep -Ei "open-in-integrated-browser|local\.open-in-integrated-browser|integrated-browser"
+```
+
+確認結果の例:
+
+```text
+local.open-in-integrated-browser
+```
+
+インストール後は VS Code を再読み込み（Developer: Reload Window）または再起動してください。
 
 ### 3. HTML を統合ブラウザで開く
 
@@ -58,8 +75,10 @@ npm install
 ## トラブルシュート
 
 - メニューが表示されない
+  - 拡張がインストール済みか確認（`code --list-extensions` に `local.open-in-integrated-browser` が出ること）
   - 対象が `.html` / `.htm` か確認
   - リモート環境や仮想スキーム上のファイルではないか確認
+  - Explorer でファイルを右クリックしているか確認（エディタタブの右クリックには出ません）
 - F5 で起動できない
   - `npm install` 実行済みか確認
   - `package.json` の `engines.vscode` が利用中バージョンに合っているか確認
