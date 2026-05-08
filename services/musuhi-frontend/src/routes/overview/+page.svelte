@@ -58,13 +58,24 @@
 
 		isSubmitting = true;
 		try {
-			const res = await fetch(`${API_BASE}/api/v1/system-overviews`, {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ content })
-			});
+			let res: Response;
+			if (overviewId) {
+				// 既存レコードを上書き更新
+				res = await fetch(`${API_BASE}/api/v1/system-overviews/${overviewId}`, {
+					method: 'PUT',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ content })
+				});
+			} else {
+				// 新規作成
+				res = await fetch(`${API_BASE}/api/v1/system-overviews`, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ content })
+				});
+			}
 
-			if (res.status === 201) {
+			if (res.status === 201 || res.status === 200) {
 				const data = await res.json();
 				await goto(`/projects/setup?overviewId=${data.data.id}`);
 			} else if (res.status === 422) {

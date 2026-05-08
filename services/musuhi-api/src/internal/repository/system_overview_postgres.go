@@ -46,3 +46,18 @@ func (r *postgresSystemOverviewRepository) FindByID(ctx context.Context, id uuid
 	}
 	return &m, nil
 }
+
+func (r *postgresSystemOverviewRepository) UpdateByID(ctx context.Context, id uuid.UUID, content string) (*model.SystemOverview, error) {
+	const q = `
+		UPDATE system_overviews
+		SET content = $2
+		WHERE id = $1
+		RETURNING id, content, created_at
+	`
+	var m model.SystemOverview
+	err := r.db.QueryRow(ctx, q, id, content).Scan(&m.ID, &m.Content, &m.CreatedAt)
+	if err != nil {
+		return nil, fmt.Errorf("systemOverviewRepository.UpdateByID: %w", err)
+	}
+	return &m, nil
+}

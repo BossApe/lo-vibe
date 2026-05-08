@@ -25,6 +25,7 @@ var ErrValidation = errors.New("validation error")
 type SystemOverviewService interface {
 	Create(ctx context.Context, content string) (*model.SystemOverview, error)
 	GetByID(ctx context.Context, rawID string) (*model.SystemOverview, error)
+	Update(ctx context.Context, rawID string, content string) (*model.SystemOverview, error)
 }
 
 type systemOverviewService struct {
@@ -63,6 +64,28 @@ func (s *systemOverviewService) GetByID(ctx context.Context, rawID string) (*mod
 			return nil, fmt.Errorf("%w: system_overview id=%s", ErrNotFound, rawID)
 		}
 		return nil, fmt.Errorf("systemOverviewService.GetByID: %w", err)
+	}
+	return m, nil
+}
+
+func (s *systemOverviewService) Update(ctx context.Context, rawID string, content string) (*model.SystemOverview, error) {
+	id, err := uuid.Parse(rawID)
+	if err != nil {
+		return nil, fmt.Errorf("%w: invalid id format", ErrValidation)
+	}
+	if content == "" {
+		return nil, fmt.Errorf("%w: content is required", ErrValidation)
+	}
+	if utf8.RuneCountInString(content) > maxContentLength {
+		return nil, fmt.Errorf("%w: content must be %d characters or less", ErrValidation, maxContentLength)
+	}
+
+	m, err := s.repo.UpdateByID(ctx, id, content)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, fmt.Errorf("%w: system_overview id=%s", ErrNotFound, rawID)
+		}
+		return nil, fmt.Errorf("systemOverviewService.Update: %w", err)
 	}
 	return m, nil
 }

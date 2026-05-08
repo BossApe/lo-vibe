@@ -12,4 +12,5 @@ import (
 type SystemOverviewRepository interface {
 	Create(ctx context.Context, content string) (*model.SystemOverview, error)
 	FindByID(ctx context.Context, id uuid.UUID) (*model.SystemOverview, error)
+	UpdateByID(ctx context.Context, id uuid.UUID, content string) (*model.SystemOverview, error)
 }

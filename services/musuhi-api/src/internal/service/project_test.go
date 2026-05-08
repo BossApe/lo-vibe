@@ -36,6 +36,14 @@ func (m *mockProjectOverviewRepository) FindByID(ctx context.Context, id uuid.UU
 	return args.Get(0).(*model.SystemOverview), args.Error(1)
 }
 
+func (m *mockProjectOverviewRepository) UpdateByID(ctx context.Context, id uuid.UUID, content string) (*model.SystemOverview, error) {
+	args := m.Called(ctx, id, content)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.SystemOverview), args.Error(1)
+}
+
 func TestProjectService_ExtractFeatures_有効な概要IDから機能一覧と構成要素を抽出する_正常系(t *testing.T) {
 	repo := new(mockProjectOverviewRepository)
 	svc := NewProjectService(repo)

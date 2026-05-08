@@ -55,6 +55,7 @@ func main() {
 	mux.HandleFunc("GET /health", handler.HealthHandler)
 	mux.HandleFunc("POST /api/v1/system-overviews", soHandler.Create)
 	mux.HandleFunc("GET /api/v1/system-overviews/{id}", soHandler.GetByID)
+	mux.HandleFunc("PUT /api/v1/system-overviews/{id}", soHandler.Update)
 	mux.HandleFunc("POST /api/v1/projects/extract-features", projectHandler.ExtractFeatures)
 	mux.HandleFunc("POST /api/v1/projects/suggest-name", projectHandler.SuggestName)
 	mux.HandleFunc("POST /api/v1/projects/init-directory", projectHandler.InitDirectory)

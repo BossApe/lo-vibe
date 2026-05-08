@@ -28,6 +28,7 @@
 | --- | --- | --- | --- | --- | --- |
 | API-FR001-POST-001 | POST | `/api/v1/system-overviews` | FR-001 システム概要入力・保存 | 実装済み | [FR-001 API仕様書 3.1](001.FR-001-システム概要入力/003.API仕様書.md#31-post-apiv1system-overviews--システム概要を保存) |
 | API-FR001-GET-001 | GET | `/api/v1/system-overviews/{id}` | FR-001 システム概要入力・保存 | 実装済み | [FR-001 API仕様書 3.2](001.FR-001-システム概要入力/003.API仕様書.md#32-get-apiv1system-overviewsid--システム概要を取得) |
+| API-FR001-PUT-001 | PUT | `/api/v1/system-overviews/{id}` | FR-001 システム概要更新 | 実装済み | [FR-001 API仕様書 3.3](001.FR-001-システム概要入力/003.API仕様書.md#33-put-apiv1system-overviewsid--システム概要を更新) |
 | API-FR002-POST-001 | POST | `/api/v1/projects/extract-features` | FR-002 機能抽出 | 実装済み | [FR-002 API仕様書 1](002.FR-002-機能抽出・ディレクトリ作成/002.API仕様書.md#1-post-apiv1projectsextract-features) |
 | API-FR002-POST-002 | POST | `/api/v1/projects/suggest-name` | FR-002 プロジェクト名候補生成 | 実装済み | [FR-002 API仕様書 2](002.FR-002-機能抽出・ディレクトリ作成/002.API仕様書.md#2-post-apiv1projectssuggest-name) |
 | API-FR002-POST-003 | POST | `/api/v1/projects/init-directory` | FR-002 初期ディレクトリ作成 | 実装済み | [FR-002 API仕様書 3](002.FR-002-機能抽出・ディレクトリ作成/002.API仕様書.md#3-post-apiv1projectsinit-directory) |
