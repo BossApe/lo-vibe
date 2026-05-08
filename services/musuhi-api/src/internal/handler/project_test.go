@@ -45,6 +45,14 @@ func (m *mockProjectService) InitDirectory(ctx context.Context, projectName, loc
 	return args.Get(0).(*model.ProjectInitResult), args.Error(1)
 }
 
+func (m *mockProjectService) CreateRepositoryWithExternal(ctx context.Context, owner, repoName, visibility, localPath, commitMessage string) (*model.ProjectWithExternalResult, error) {
+	args := m.Called(ctx, owner, repoName, visibility, localPath, commitMessage)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.ProjectWithExternalResult), args.Error(1)
+}
+
 func TestProjectHandler_ExtractFeatures_有効な概要IDから機能一覧と構成要素を抽出する_正常系(t *testing.T) {
 	svc := new(mockProjectService)
 	h := NewProjectHandler(svc)
@@ -163,4 +171,49 @@ func TestProjectHandler_ExtractFeatures_存在しない概要IDから機能一�
 	h.ExtractFeatures(rec, req)
 
 	assert.Equal(t, http.StatusNotFound, rec.Code)
+}
+
+func TestProjectHandler_WithExternal_有効な入力でGitHubリポジトリ作成と初回pushを実行する_正常系(t *testing.T) {
+	svc := new(mockProjectService)
+	h := NewProjectHandler(svc)
+
+	svc.On("CreateRepositoryWithExternal", mock.Anything, "BossApe", "demo-project", "private", "/tmp/demo-project", "initial commit").Return(
+		&model.ProjectWithExternalResult{
+			RepositoryURL:     "https://github.com/BossApe/demo-project",
+			ExternalProjectID: "123456",
+			PushStatus:        "success",
+		}, nil,
+	)
+
+	body := `{"owner":"BossApe","repoName":"demo-project","visibility":"private","localPath":"/tmp/demo-project","commitMessage":"initial commit"}`
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/projects/with-external", bytes.NewBufferString(body))
+	rec := httptest.NewRecorder()
+
+	h.WithExternal(rec, req)
+
+	assert.Equal(t, http.StatusCreated, rec.Code)
+	var resp map[string]any
+	assert.NoError(t, json.Unmarshal(rec.Body.Bytes(), &resp))
+	data := resp["data"].(map[string]any)
+	assert.Equal(t, "success", data["pushStatus"])
+	assert.Equal(t, "https://github.com/BossApe/demo-project", data["repositoryUrl"])
+	svc.AssertExpectations(t)
+}
+
+func TestProjectHandler_WithExternal_ownerを空で指定してGitHubリポジトリ作成を実行する_異常系(t *testing.T) {
+	svc := new(mockProjectService)
+	h := NewProjectHandler(svc)
+
+	svc.On("CreateRepositoryWithExternal", mock.Anything, "", "demo-project", "private", "/tmp/demo-project", "initial commit").Return(
+		nil, fmt.Errorf("%w: owner is required", service.ErrValidation),
+	)
+
+	body := `{"owner":"","repoName":"demo-project","visibility":"private","localPath":"/tmp/demo-project","commitMessage":"initial commit"}`
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/projects/with-external", bytes.NewBufferString(body))
+	rec := httptest.NewRecorder()
+
+	h.WithExternal(rec, req)
+
+	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+	svc.AssertExpectations(t)
 }

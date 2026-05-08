@@ -26,3 +26,10 @@ type ProjectInitResult struct {
 	ID              uuid.UUID `json:"id"`
 	DirectoryStatus string    `json:"directoryStatus"`
 }
+
+// ProjectWithExternalResult は GitHub リポジトリ作成・initial push の結果を表す。
+type ProjectWithExternalResult struct {
+	RepositoryURL     string `json:"repositoryUrl"`
+	ExternalProjectID string `json:"externalProjectId"`
+	PushStatus        string `json:"pushStatus"`
+}

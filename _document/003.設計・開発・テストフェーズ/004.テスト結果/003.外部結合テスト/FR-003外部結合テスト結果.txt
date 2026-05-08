@@ -1,0 +1,35 @@
+[実行日時] 2026-05-09 00:57 JST
+[対象ID] FR-003
+[テスト種別] 外部結合テスト
+[状態] 実行済み（Pass）
+[実行コマンド] RUN_EXTERNAL_TESTS=1 GITHUB_TEST_OWNER=BossApe go test ./test/external -run WithExternal -v
+
+[前提条件]
+- Docker Compose で postgres を起動済み
+- GitHub CLI (`gh`) がインストール済み
+- `gh auth status` が success（repo scope 有効）
+- `GITHUB_TEST_OWNER` に対象 owner を設定
+
+[テストケース]
+- TC-FR003-N01: GitHubリポジトリを作成してcommit/pushする
+- TC-FR003-I01: 作成したリポジトリが GitHub 上に存在する
+
+[結果]
+- PASS: TestExternalIntegration_WithExternal_実GitHubにリポジトリ作成して初回pushする_正常系
+- HTTP 201（`POST /api/v1/projects/with-external`）を確認
+- レスポンス `pushStatus=success` を確認
+- `gh repo view` により作成リポジトリの存在を確認
+- delete_repo scope 付与後、作成リポジトリの自動削除と削除完了ログを確認
+
+[実行ログ抜粋]
+=== RUN   TestExternalIntegration_WithExternal_実GitHubにリポジトリ作成して初回pushする_正常系
+2026/05/09 00:57:31 INFO http request method=POST path=/api/v1/projects/with-external status=201 duration_ms=5502
+	project_with_external_test.go:114: cleanup completed: deleted repository BossApe/musuhi-fr003-e2e-1778255845
+--- PASS: TestExternalIntegration_WithExternal_実GitHubにリポジトリ作成して初回pushする_正常系 (8.00s)
+PASS
+ok      musuhi-api/test/external        8.261s
+
+[備考]
+- 作成リポジトリ名は `musuhi-fr003-e2e-<unix_time>` の一意名称で実行
+- `gh auth status` で `delete_repo` scope 付与を確認済み
+- 後片付け自動化（削除 + 削除完了ログ出力）は実測で確認済み

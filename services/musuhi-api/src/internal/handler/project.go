@@ -28,6 +28,14 @@ type initDirectoryRequest struct {
 	Template    string `json:"template"`
 }
 
+type withExternalRequest struct {
+	Owner         string `json:"owner"`
+	RepoName      string `json:"repoName"`
+	Visibility    string `json:"visibility"`
+	LocalPath     string `json:"localPath"`
+	CommitMessage string `json:"commitMessage"`
+}
+
 // ExtractFeatures は POST /api/v1/projects/extract-features を処理する。
 func (h *ProjectHandler) ExtractFeatures(w http.ResponseWriter, r *http.Request) {
 	var req overviewIDRequest
@@ -71,6 +79,30 @@ func (h *ProjectHandler) InitDirectory(w http.ResponseWriter, r *http.Request) {
 	}
 
 	result, err := h.svc.InitDirectory(r.Context(), req.ProjectName, req.LocalPath, req.Template)
+	if err != nil {
+		handleProjectServiceError(w, err)
+		return
+	}
+
+	writeJSON(w, http.StatusCreated, dataEnvelope{Data: result})
+}
+
+// WithExternal は POST /api/v1/projects/with-external を処理する。
+func (h *ProjectHandler) WithExternal(w http.ResponseWriter, r *http.Request) {
+	var req withExternalRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeError(w, http.StatusBadRequest, "BAD_REQUEST", "リクエストの形式が不正です", nil)
+		return
+	}
+
+	result, err := h.svc.CreateRepositoryWithExternal(
+		r.Context(),
+		req.Owner,
+		req.RepoName,
+		req.Visibility,
+		req.LocalPath,
+		req.CommitMessage,
+	)
 	if err != nil {
 		handleProjectServiceError(w, err)
 		return

@@ -59,6 +59,7 @@ func main() {
 	mux.HandleFunc("POST /api/v1/projects/extract-features", projectHandler.ExtractFeatures)
 	mux.HandleFunc("POST /api/v1/projects/suggest-name", projectHandler.SuggestName)
 	mux.HandleFunc("POST /api/v1/projects/init-directory", projectHandler.InitDirectory)
+	mux.HandleFunc("POST /api/v1/projects/with-external", projectHandler.WithExternal)
 
 	// ミドルウェアチェーン
 	h := middleware.Logger(middleware.CORS(mux))

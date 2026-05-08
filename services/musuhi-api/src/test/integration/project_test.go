@@ -48,12 +48,21 @@ func (m *mockProjectService) InitDirectory(ctx context.Context, projectName, loc
 	return args.Get(0).(*model.ProjectInitResult), args.Error(1)
 }
 
+func (m *mockProjectService) CreateRepositoryWithExternal(ctx context.Context, owner, repoName, visibility, localPath, commitMessage string) (*model.ProjectWithExternalResult, error) {
+	args := m.Called(ctx, owner, repoName, visibility, localPath, commitMessage)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.ProjectWithExternalResult), args.Error(1)
+}
+
 func newProjectTestServer(svc service.ProjectService) *httptest.Server {
 	ph := handler.NewProjectHandler(svc)
 	mux := http.NewServeMux()
 	mux.HandleFunc("POST /api/v1/projects/extract-features", ph.ExtractFeatures)
 	mux.HandleFunc("POST /api/v1/projects/suggest-name", ph.SuggestName)
 	mux.HandleFunc("POST /api/v1/projects/init-directory", ph.InitDirectory)
+	mux.HandleFunc("POST /api/v1/projects/with-external", ph.WithExternal)
 	h := middleware.Logger(middleware.CORS(mux))
 	return httptest.NewServer(h)
 }
@@ -289,4 +298,49 @@ func TestIntegration_InitDirectory_不正なJSONで初期ディレクトリを�
 	assert.NoError(t, json.NewDecoder(res.Body).Decode(&resp))
 	errBody := resp["error"].(map[string]any)
 	assert.Equal(t, "BAD_REQUEST", errBody["code"])
+}
+
+func TestIntegration_WithExternal_GitHubリポジトリ作成と初回pushを実行する_正常系(t *testing.T) {
+	svc := new(mockProjectService)
+	svc.On("CreateRepositoryWithExternal", mock.Anything, "BossApe", "demo-project", "private", "/tmp/demo-project", "initial commit").Return(
+		&model.ProjectWithExternalResult{
+			RepositoryURL:     "https://github.com/BossApe/demo-project",
+			ExternalProjectID: "123456",
+			PushStatus:        "success",
+		}, nil,
+	)
+	srv := newProjectTestServer(svc)
+	defer srv.Close()
+
+	body := `{"owner":"BossApe","repoName":"demo-project","visibility":"private","localPath":"/tmp/demo-project","commitMessage":"initial commit"}`
+	res, err := http.Post(srv.URL+"/api/v1/projects/with-external", "application/json", bytes.NewBufferString(body))
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusCreated, res.StatusCode)
+
+	var resp map[string]any
+	assert.NoError(t, json.NewDecoder(res.Body).Decode(&resp))
+	data := resp["data"].(map[string]any)
+	assert.Equal(t, "https://github.com/BossApe/demo-project", data["repositoryUrl"])
+	assert.Equal(t, "success", data["pushStatus"])
+	svc.AssertExpectations(t)
+}
+
+func TestIntegration_WithExternal_ownerを空で指定してGitHubリポジトリ作成を実行する_異常系(t *testing.T) {
+	svc := new(mockProjectService)
+	svc.On("CreateRepositoryWithExternal", mock.Anything, "", "demo-project", "private", "/tmp/demo-project", "initial commit").Return(
+		nil, fmt.Errorf("%w: owner is required", service.ErrValidation),
+	)
+	srv := newProjectTestServer(svc)
+	defer srv.Close()
+
+	body := `{"owner":"","repoName":"demo-project","visibility":"private","localPath":"/tmp/demo-project","commitMessage":"initial commit"}`
+	res, err := http.Post(srv.URL+"/api/v1/projects/with-external", "application/json", bytes.NewBufferString(body))
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusUnprocessableEntity, res.StatusCode)
+
+	var resp map[string]any
+	assert.NoError(t, json.NewDecoder(res.Body).Decode(&resp))
+	errBody := resp["error"].(map[string]any)
+	assert.Equal(t, "VALIDATION_ERROR", errBody["code"])
+	svc.AssertExpectations(t)
 }

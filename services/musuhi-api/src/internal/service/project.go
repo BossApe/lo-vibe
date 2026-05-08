@@ -23,10 +23,12 @@ type ProjectService interface {
 	ExtractFeatures(ctx context.Context, overviewID string) (*model.ProjectExtraction, error)
 	SuggestName(ctx context.Context, overviewID string) (*model.ProjectNameSuggestion, error)
 	InitDirectory(ctx context.Context, projectName, localPath, template string) (*model.ProjectInitResult, error)
+	CreateRepositoryWithExternal(ctx context.Context, owner, repoName, visibility, localPath, commitMessage string) (*model.ProjectWithExternalResult, error)
 }
 
 type projectService struct {
 	overviewRepo repository.SystemOverviewRepository
+	githubClient GitHubClient
 }
 
 type systemNameCandidate struct {
@@ -42,7 +44,7 @@ type themedNameCandidate struct {
 
 // NewProjectService は ProjectService を生成する。
 func NewProjectService(overviewRepo repository.SystemOverviewRepository) ProjectService {
-	return &projectService{overviewRepo: overviewRepo}
+	return &projectService{overviewRepo: overviewRepo, githubClient: newDefaultGitHubClient()}
 }
 
 func (s *projectService) ExtractFeatures(ctx context.Context, overviewID string) (*model.ProjectExtraction, error) {

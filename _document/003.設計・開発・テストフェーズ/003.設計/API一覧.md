@@ -32,7 +32,7 @@
 | API-FR002-POST-001 | POST | `/api/v1/projects/extract-features` | FR-002 機能抽出 | 実装済み | [FR-002 API仕様書 1](002.FR-002-機能抽出・ディレクトリ作成/002.API仕様書.md#1-post-apiv1projectsextract-features) |
 | API-FR002-POST-002 | POST | `/api/v1/projects/suggest-name` | FR-002 プロジェクト名候補生成 | 実装済み | [FR-002 API仕様書 2](002.FR-002-機能抽出・ディレクトリ作成/002.API仕様書.md#2-post-apiv1projectssuggest-name) |
 | API-FR002-POST-003 | POST | `/api/v1/projects/init-directory` | FR-002 初期ディレクトリ作成 | 実装済み | [FR-002 API仕様書 3](002.FR-002-機能抽出・ディレクトリ作成/002.API仕様書.md#3-post-apiv1projectsinit-directory) |
-| API-FR003-POST-001 | POST | `/api/v1/projects/with-external` | FR-003 GitHubリポジトリ作成・push | 未実装 | [機能業務フロー図（FR-003）](001.FR-001-システム概要入力/001.機能業務フロー図.md) |
+| API-FR003-POST-001 | POST | `/api/v1/projects/with-external` | FR-003 GitHubリポジトリ作成・push | 実装済み | [FR-003 API仕様書 1](003.FR-003-GitHubリポジトリ作成・initial-push/003.API仕様書.md#1-post-apiv1projectswith-external) |
 | API-FR004-POST-001 | POST | `/api/v1/projects/github-projects` | FR-004 GitHub Projects作成 | 未実装 | [機能業務フロー図（FR-004）](001.FR-001-システム概要入力/001.機能業務フロー図.md) |
 
 ---
@@ -43,7 +43,7 @@
 | --- | --- | --- |
 | FR-001 | [FR-001 API仕様書](001.FR-001-システム概要入力/003.API仕様書.md) | 詳細定義あり（実装済み） |
 | FR-002 | [FR-002 API仕様書](002.FR-002-機能抽出・ディレクトリ作成/002.API仕様書.md) | TK1-1-2 実装済み |
-| FR-003 | [機能業務フロー図](001.FR-001-システム概要入力/001.機能業務フロー図.md) | API仕様書は未作成 |
+| FR-003 | [FR-003 API仕様書](003.FR-003-GitHubリポジトリ作成・initial-push/003.API仕様書.md) | TK1-1-3 実装済み |
 | FR-004 | [機能業務フロー図](001.FR-001-システム概要入力/001.機能業務フロー図.md) | API仕様書は未作成 |
 
 ---
