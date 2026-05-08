@@ -124,8 +124,10 @@ func TestExternalIntegration_UpdateSystemOverview_実DBのシステム概要を�
 	id := created.Data.ID
 
 	// 更新
-	updateBody, _ := json.Marshal(map[string]string{"content": "更新後概要"})
-	req, _ := http.NewRequest(http.MethodPut, srv.URL+"/api/v1/system-overviews/"+id, bytes.NewReader(updateBody))
+	updateBody, err := json.Marshal(map[string]string{"content": "更新後概要"})
+	require.NoError(t, err)
+	req, err := http.NewRequest(http.MethodPut, srv.URL+"/api/v1/system-overviews/"+id, bytes.NewReader(updateBody))
+	require.NoError(t, err)
 	req.Header.Set("Content-Type", "application/json")
 	res, err := http.DefaultClient.Do(req)
 	require.NoError(t, err)
