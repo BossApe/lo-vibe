@@ -1,8 +1,6 @@
-//go:build external
-
 // Package external は実際の PostgreSQL DB に接続する外部結合テストです。
 // 実行するには Docker Compose でサービスを起動し、DATABASE_URL を設定した上で
-// go test -tags external ./test/external/... -v
+// RUN_EXTERNAL_TESTS=1 go test ./test/external/... -v
 // を実行してください。
 package external
 
@@ -36,6 +34,10 @@ type systemOverviewEnvelope struct {
 
 func newExternalTestPool(t *testing.T) *pgxpool.Pool {
 	t.Helper()
+	if os.Getenv("RUN_EXTERNAL_TESTS") != "1" {
+		t.Skip("external integration tests are disabled; set RUN_EXTERNAL_TESTS=1 to run")
+	}
+
 	dsn := os.Getenv("DATABASE_URL")
 	if dsn == "" {
 		dsn = "postgres://musuhi:musuhi@localhost:5432/musuhi?sslmode=disable"
