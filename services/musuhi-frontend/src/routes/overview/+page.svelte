@@ -2,7 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 
-	const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080';
+	const API_BASE = import.meta.env.VITE_API_BASE_URL ?? '';
 	const MAX_LENGTH = 4096;
 
 	let overviewId = $state('');
@@ -19,7 +19,7 @@
 		}
 	});
 
-	async function loadOverview(id: string) {
+	async function loadOverview(id: string): Promise<void> {
 		isLoadingOverview = true;
 		errorMessage = '';
 		try {
@@ -46,7 +46,7 @@
 		return '';
 	}
 
-	async function handleSubmit(e: Event) {
+	async function handleSubmit(e: Event): Promise<void> {
 		e.preventDefault();
 		errorMessage = '';
 

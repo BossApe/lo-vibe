@@ -22,6 +22,10 @@ type createSystemOverviewRequest struct {
 	Content string `json:"content"`
 }
 
+type updateSystemOverviewRequest struct {
+	Content string `json:"content"`
+}
+
 type systemOverviewResponse struct {
 	ID        string `json:"id"`
 	Content   string `json:"content"`
@@ -48,7 +52,7 @@ type errorEnvelope struct {
 }
 
 func writeJSON(w http.ResponseWriter, status int, v any) {
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(status)
 	_ = json.NewEncoder(w).Encode(v)
 }
@@ -91,7 +95,7 @@ func (h *SystemOverviewHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req createSystemOverviewRequest
+	var req updateSystemOverviewRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, http.StatusBadRequest, "BAD_REQUEST", "リクエストの形式が不正です", nil)
 		return
@@ -135,7 +139,8 @@ func (h *SystemOverviewHandler) GetByID(w http.ResponseWriter, r *http.Request) 
 			return
 		}
 		if errors.Is(err, service.ErrValidation) {
-			writeError(w, http.StatusBadRequest, "BAD_REQUEST", err.Error(), nil)
+			writeError(w, http.StatusUnprocessableEntity, "VALIDATION_ERROR", err.Error(),
+				[]errorDetail{{Field: "id", Message: err.Error()}})
 			return
 		}
 		writeError(w, http.StatusInternalServerError, "INTERNAL_ERROR", "サーバーエラーが発生しました", nil)

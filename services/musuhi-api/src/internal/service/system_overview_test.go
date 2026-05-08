@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"errors"
 	"testing"
 	"time"
 
@@ -113,11 +112,10 @@ func TestSystemOverviewService_GetByID_存在しないUUIDでシステム概要�
 	svc := NewSystemOverviewService(repo)
 
 	id := uuid.New()
-	// pgx.ErrNoRows を模倣
-	repo.On("FindByID", mock.Anything, id).Return(nil, errors.New("no rows in result set"))
+	repo.On("FindByID", mock.Anything, id).Return(nil, pgx.ErrNoRows)
 
 	_, err := svc.GetByID(context.Background(), id.String())
-	assert.Error(t, err)
+	assert.ErrorIs(t, err, ErrNotFound)
 	repo.AssertExpectations(t)
 }
 

@@ -1,6 +1,6 @@
-[実行日時] 2026-05-08 23:40:28
+[実行日時] 2026-05-08 23:35:50
 [対象ID] FR-002
-[テスト種別] 内部結合テスト
+[テスト種別] APIテスト
 [コマンド] go test ./test/integration -run ExtractFeatures|SuggestName|InitDirectory -v
 
 === RUN   TestIntegration_ExtractFeatures_有効な概要IDから機能一覧と構成要素を抽出する_正常系
@@ -37,6 +37,6 @@
 2026/05/08 23:35:51 INFO http request method=POST path=/api/v1/projects/init-directory status=400 duration_ms=0
 --- PASS: TestIntegration_InitDirectory_不正なJSONで初期ディレクトリを作成する_異常系 (0.00s)
 PASS
-ok  	musuhi-api/test/integration	(cached)
+ok  	musuhi-api/test/integration	0.212s
 
 [終了コード] 0

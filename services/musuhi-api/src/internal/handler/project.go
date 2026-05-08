@@ -85,7 +85,7 @@ func handleProjectServiceError(w http.ResponseWriter, err error) {
 		return
 	}
 	if errors.Is(err, service.ErrNotFound) {
-		writeError(w, http.StatusNotFound, "NOT_FOUND", err.Error(), nil)
+		writeError(w, http.StatusNotFound, "NOT_FOUND", "指定されたIDのリソースが存在しません", nil)
 		return
 	}
 	writeError(w, http.StatusInternalServerError, "INTERNAL_ERROR", "サーバーエラーが発生しました", nil)
