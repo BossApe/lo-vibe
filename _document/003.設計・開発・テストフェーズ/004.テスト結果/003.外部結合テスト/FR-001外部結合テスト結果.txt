@@ -1,11 +1,23 @@
-[テンプレート作成日時] 2026-05-07 00:51:46
+[実行日時] 2026-05-08 23:49:30
 [対象ID] FR-001
 [テスト種別] 外部結合テスト
-[状態] 未実行
-[実行コマンド] 未設定
+[コマンド] go test -tags external ./test/external/... -run SystemOverview -v
 
-[記録欄]
-- 実行環境:
-- 前提条件:
-- 結果:
-- 備考:
+=== RUN   TestExternalIntegration_CreateSystemOverview_実DBにシステム概要を保存する_正常系
+2026/05/08 23:49:30 INFO http request method=POST path=/api/v1/system-overviews status=201 duration_ms=3
+--- PASS: TestExternalIntegration_CreateSystemOverview_実DBにシステム概要を保存する_正常系 (0.02s)
+=== RUN   TestExternalIntegration_GetSystemOverviewByID_実DBからシステム概要を取得する_正常系
+2026/05/08 23:49:30 INFO http request method=POST path=/api/v1/system-overviews status=201 duration_ms=2
+2026/05/08 23:49:30 INFO http request method=GET path=/api/v1/system-overviews/3d9d143c-ad59-43de-bf65-c6898888c292 status=200 duration_ms=1
+--- PASS: TestExternalIntegration_GetSystemOverviewByID_実DBからシステム概要を取得する_正常系 (0.01s)
+=== RUN   TestExternalIntegration_UpdateSystemOverview_実DBのシステム概要を更新する_正常系
+2026/05/08 23:49:30 INFO http request method=POST path=/api/v1/system-overviews status=201 duration_ms=2
+2026/05/08 23:49:30 INFO http request method=PUT path=/api/v1/system-overviews/ac866aa4-4e62-49a1-9e09-850ad99d843d status=200 duration_ms=1
+--- PASS: TestExternalIntegration_UpdateSystemOverview_実DBのシステム概要を更新する_正常系 (0.01s)
+=== RUN   TestExternalIntegration_GetSystemOverviewByID_存在しないUUIDで取得する_異常系
+2026/05/08 23:49:30 INFO http request method=GET path=/api/v1/system-overviews/00000000-0000-0000-0000-000000000000 status=404 duration_ms=2
+--- PASS: TestExternalIntegration_GetSystemOverviewByID_存在しないUUIDで取得する_異常系 (0.01s)
+PASS
+ok  	musuhi-api/test/external	0.268s
+
+[終了コード] 0
