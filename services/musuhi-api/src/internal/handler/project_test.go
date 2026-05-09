@@ -37,6 +37,22 @@ func (m *mockProjectService) SuggestName(ctx context.Context, overviewID string)
 	return args.Get(0).(*model.ProjectNameSuggestion), args.Error(1)
 }
 
+func (m *mockProjectService) GetNameSuggestionProfile(ctx context.Context) (*model.NameSuggestionProfile, error) {
+	args := m.Called(ctx)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.NameSuggestionProfile), args.Error(1)
+}
+
+func (m *mockProjectService) SetNameSuggestionProfile(ctx context.Context, profile string) (*model.NameSuggestionProfile, error) {
+	args := m.Called(ctx, profile)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.NameSuggestionProfile), args.Error(1)
+}
+
 func (m *mockProjectService) InitDirectory(ctx context.Context, projectName, localPath, template string) (*model.ProjectInitResult, error) {
 	args := m.Called(ctx, projectName, localPath, template)
 	if args.Get(0) == nil {
@@ -154,6 +170,48 @@ func TestProjectHandler_SuggestName_有効な概要IDからプロジェクト名
 	items := data["items"].([]any)
 	assert.NotEmpty(t, items)
 	assert.Equal(t, "sukunahikona", items[0].(map[string]any)["name"])
+	svc.AssertExpectations(t)
+}
+
+func TestProjectHandler_GetNameSuggestionProfile_現在値を取得する_正常系(t *testing.T) {
+	svc := new(mockProjectService)
+	h := NewProjectHandler(svc)
+	svc.On("GetNameSuggestionProfile", mock.Anything).Return(
+		&model.NameSuggestionProfile{Profile: "fast", AvailableProfiles: []string{"fast", "balanced", "quality"}, Enabled: true},
+		nil,
+	)
+
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/projects/name-suggestion-profile", nil)
+	rec := httptest.NewRecorder()
+
+	h.GetNameSuggestionProfile(rec, req)
+
+	assert.Equal(t, http.StatusOK, rec.Code)
+	var resp map[string]any
+	assert.NoError(t, json.Unmarshal(rec.Body.Bytes(), &resp))
+	data := resp["data"].(map[string]any)
+	assert.Equal(t, "fast", data["profile"])
+	svc.AssertExpectations(t)
+}
+
+func TestProjectHandler_SetNameSuggestionProfile_更新する_正常系(t *testing.T) {
+	svc := new(mockProjectService)
+	h := NewProjectHandler(svc)
+	svc.On("SetNameSuggestionProfile", mock.Anything, "quality").Return(
+		&model.NameSuggestionProfile{Profile: "quality", AvailableProfiles: []string{"fast", "balanced", "quality"}, Enabled: true},
+		nil,
+	)
+
+	req := httptest.NewRequest(http.MethodPut, "/api/v1/projects/name-suggestion-profile", bytes.NewBufferString(`{"profile":"quality"}`))
+	rec := httptest.NewRecorder()
+
+	h.SetNameSuggestionProfile(rec, req)
+
+	assert.Equal(t, http.StatusOK, rec.Code)
+	var resp map[string]any
+	assert.NoError(t, json.Unmarshal(rec.Body.Bytes(), &resp))
+	data := resp["data"].(map[string]any)
+	assert.Equal(t, "quality", data["profile"])
 	svc.AssertExpectations(t)
 }
 

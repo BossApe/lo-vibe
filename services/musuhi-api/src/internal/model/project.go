@@ -21,6 +21,13 @@ type ProjectNameCandidate struct {
 	AISuggested bool   `json:"aiSuggested"`
 }
 
+// NameSuggestionProfile は名前候補生成で使うLLM運用モードを表す。
+type NameSuggestionProfile struct {
+	Profile           string   `json:"profile"`
+	AvailableProfiles []string `json:"availableProfiles"`
+	Enabled           bool     `json:"enabled"`
+}
+
 // ProjectInitResult は初期ディレクトリ作成結果を表す。
 type ProjectInitResult struct {
 	ID              uuid.UUID `json:"id"`

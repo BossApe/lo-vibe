@@ -9,8 +9,12 @@
 
 	const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080';
 	const BASE_DIR = '/Users/m.nohara/gitspace/';
+	const initialOverviewId =
+		typeof window !== 'undefined'
+			? (new URLSearchParams(window.location.search).get('overviewId') ?? '')
+			: '';
 
-	let overviewId = $state('');
+	let overviewId = $state(initialOverviewId);
 	let localPath = $state('');
 	let localPathEdited = $state(false);
 	let selectedProjectName = $state('');
@@ -27,15 +31,31 @@
 	let directoryStatus = $state('');
 	let errorMessage = $state('');
 	let isLoading = $state(false);
+	let isSwitchingProfile = $state(false);
 	let hasAutoExtracted = $state(false);
+	let profileEnabled = $state(false);
+	let modelProfile = $state('balanced');
+	let availableProfiles = $state<string[]>(['fast', 'balanced', 'quality']);
 
 	let selectedCandidate = $derived(
 		candidateItems.find((item) => item.name === selectedProjectName)
 	);
+	let selectedCandidateReason = $derived.by(() => {
+		if (!selectedCandidate) {
+			return '';
+		}
+		if (selectedCandidate.reason && selectedCandidate.reason.trim()) {
+			return selectedCandidate.reason;
+		}
+		return 'システム概要のキーワードから生成した候補です。必要に応じて自由入力で調整してください。';
+	});
 
 	onMount(() => {
-		const params = new URLSearchParams(window.location.search);
-		overviewId = params.get('overviewId') ?? '';
+		if (!overviewId) {
+			const params = new URLSearchParams(window.location.search);
+			overviewId = params.get('overviewId') ?? '';
+		}
+		void loadNameSuggestionProfile();
 	});
 
 	$effect(() => {
@@ -58,6 +78,58 @@
 		return payload;
 	}
 
+	async function getJson(path: string): Promise<any> {
+		const res = await fetch(`${API_BASE}${path}`);
+		const payload = await res.json().catch(() => ({}));
+		if (!res.ok) {
+			throw new Error(payload?.error?.message ?? 'APIエラーが発生しました。');
+		}
+		return payload;
+	}
+
+	async function putJson(path: string, body: unknown): Promise<any> {
+		const res = await fetch(`${API_BASE}${path}`, {
+			method: 'PUT',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(body)
+		});
+		const payload = await res.json().catch(() => ({}));
+		if (!res.ok) {
+			throw new Error(payload?.error?.message ?? 'APIエラーが発生しました。');
+		}
+		return payload;
+	}
+
+	async function loadNameSuggestionProfile() {
+		try {
+			const result = await getJson('/api/v1/projects/name-suggestion-profile');
+			profileEnabled = Boolean(result.data?.enabled);
+			availableProfiles = result.data?.availableProfiles ?? ['fast', 'balanced', 'quality'];
+			modelProfile = result.data?.profile ?? 'balanced';
+		} catch {
+			profileEnabled = false;
+		}
+	}
+
+	async function handleProfileChange(event: Event) {
+		const next = (event.currentTarget as HTMLSelectElement).value;
+		if (!profileEnabled || !next || next === modelProfile) {
+			return;
+		}
+
+		isSwitchingProfile = true;
+		errorMessage = '';
+		try {
+			const result = await putJson('/api/v1/projects/name-suggestion-profile', { profile: next });
+			modelProfile = result.data?.profile ?? next;
+			await handleExtract();
+		} catch (e) {
+			errorMessage = e instanceof Error ? e.message : 'モデル運用モードの切替に失敗しました。';
+		} finally {
+			isSwitchingProfile = false;
+		}
+	}
+
 	async function handleExtract() {
 		errorMessage = '';
 		directoryStatus = '';
@@ -69,7 +141,11 @@
 
 			const nameResult = await postJson('/api/v1/projects/suggest-name', { overviewId });
 			candidates = nameResult.data?.candidates ?? [];
-			candidateItems = nameResult.data?.items ?? [];
+			const items = nameResult.data?.items ?? [];
+			candidateItems =
+				items.length > 0
+					? items
+					: candidates.map((name: string) => ({ name, aiSuggested: false }));
 			if (!selectedProjectName && candidates.length > 0) {
 				selectedProjectName = candidates[0];
 			}
@@ -134,6 +210,14 @@
 	{#if candidates.length > 0}
 		<div class="card">
 			<h2>プロジェクト名候補</h2>
+			{#if profileEnabled}
+				<label for="modelProfile">モデル運用モード</label>
+				<select id="modelProfile" bind:value={modelProfile} onchange={handleProfileChange} disabled={isSwitchingProfile || isLoading}>
+					{#each availableProfiles as profile}
+						<option value={profile}>{profile}</option>
+					{/each}
+				</select>
+			{/if}
 			<label for="projectName">プロジェクト名（候補から選択またはキーボード入力）</label>
 			<input
 				id="projectName"
@@ -147,8 +231,8 @@
 				{/each}
 			</datalist>
 
-			{#if selectedCandidate?.aiSuggested && selectedCandidate.reason}
-				<p class="candidate-reason">{selectedCandidate.reason}</p>
+			{#if selectedCandidateReason}
+				<p class="candidate-reason">{selectedCandidateReason}</p>
 			{/if}
 
 			<label for="localPath">ローカル作成先パス（絶対パス）</label>
@@ -206,6 +290,14 @@
 		font-size: 0.95rem;
 		border: 1px solid #ccc;
 		border-radius: 6px;
+	}
+
+	select {
+		padding: 0.55rem 0.7rem;
+		font-size: 0.95rem;
+		border: 1px solid #ccc;
+		border-radius: 6px;
+		background: #fff;
 	}
 
 	.candidate-reason {

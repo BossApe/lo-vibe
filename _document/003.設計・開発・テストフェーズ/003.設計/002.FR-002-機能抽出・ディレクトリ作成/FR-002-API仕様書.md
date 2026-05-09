@@ -1,0 +1,157 @@
+# FR-002-API仕様書
+
+前: [FR-002-処理フロー設計書](FR-002-処理フロー設計書.md) | [一覧](README.md) | 次: [FR-002-画面設計書](FR-002-画面設計書.md)
+
+## 1. POST /api/v1/projects/extract-features
+
+### リクエスト
+
+```json
+{
+  "overviewId": "uuid"
+}
+```
+
+### レスポンス (200)
+
+```json
+{
+  "data": {
+    "features": ["ユーザ管理機能"],
+    "components": ["Frontend UI", "Backend API", "RDB"]
+  }
+}
+```
+
+### 候補生成ルール
+
+- `items` には AI 提案の神様候補を先頭に最低 1 件含める
+- システム名ローマ字候補（例: `zaiko`, `shoseki`）は神様候補の後続として返す
+- `items.reason` は神様候補では必須、ローマ字候補では省略可
+- テーマ未一致時は、`MUSUHI_LLM_ENDPOINT` が設定されている場合に LLM で神様候補生成を試行する（`MUSUHI_LLM_API_KEY` は任意）。生成結果が不正または失敗時は既存フォールバック候補へ退避する
+
+## 2. POST /api/v1/projects/suggest-name
+
+### リクエスト
+
+```json
+{
+  "overviewId": "uuid"
+}
+```
+
+### レスポンス (200)
+
+```json
+{
+  "data": {
+    "candidates": ["sukunahikona", "watatsumi", "sarutahiko"],
+    "items": [
+      {
+        "name": "sukunahikona",
+        "reason": "旅や知恵に結びつく存在として知られる名です。\n旅行計画や観光支援サービスに、軽やかで知的な印象を与えます。",
+        "aiSuggested": true
+      }
+    ]
+  }
+}
+```
+
+## 3. POST /api/v1/projects/init-directory
+
+### リクエスト
+
+```json
+{
+  "projectName": "demo_project",
+  "localPath": "/Users/yourname/gitspace/demo_project",
+  "template": "default"
+}
+```
+
+## 3.5 GET /api/v1/projects/name-suggestion-profile
+
+### 補足
+
+- `enabled` は LLM サジェスタ利用可否を表す
+- `enabled: false` の場合、フロントエンドはモデル運用モード UI を非表示にする
+
+### レスポンス (200)
+
+```json
+{
+  "data": {
+    "profile": "balanced",
+    "availableProfiles": ["fast", "balanced", "quality"],
+    "enabled": true
+  }
+}
+```
+
+## 3.6 PUT /api/v1/projects/name-suggestion-profile
+
+### リクエスト
+
+```json
+{
+  "profile": "quality"
+}
+```
+
+### レスポンス (200)
+
+```json
+{
+  "data": {
+    "profile": "quality",
+    "availableProfiles": ["fast", "balanced", "quality"],
+    "enabled": true
+  }
+}
+```
+
+### リクエストパラメータ制約
+
+| フィールド | 制約 |
+| --- | --- |
+| `projectName` | 必須。先頭は英数字。以降は英数字・`_`・`-` のみ。パターン: `^[a-zA-Z0-9][a-zA-Z0-9_-]*$` |
+| `localPath` | 必須。絶対パス (`/` 始まり) の最終作成先ディレクトリ。対象ディレクトリが存在しない場合は自動生成する |
+| `template` | 省略可。省略時は `"default"` とみなす。現バージョンで許容される値は `"default"` のみ |
+
+### レスポンス (201)
+
+```json
+{
+  "data": {
+    "id": "uuid",
+    "directoryStatus": "success"
+  }
+}
+```
+
+## 4. エラーコード
+
+| コード | HTTP | 条件 |
+| --- | --- | --- |
+| `BAD_REQUEST` | 400 | JSON 形式不正 |
+| `VALIDATION_ERROR` | 422 | overviewId / projectName / localPath / template の不正 |
+| `NOT_FOUND` | 404 | overviewId に対応する system_overviews が存在しない |
+| `INTERNAL_ERROR` | 500 | サーバ内部エラー |
+
+### エラーレスポンス形式
+
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "projectName must match ^[a-zA-Z0-9][a-zA-Z0-9_-]*$"
+  }
+}
+```
+
+## 更新履歴
+
+| 日付 | 版 | 変更内容 | 作成者 |
+| --- | --- | --- | --- |
+| 2026-05-06 | 0.1 | 初版作成 | Copilot |
+| 2026-05-06 | 0.2 | 設計リファクタリング: projectName 制約・ template 許容値・エラーレスポンス形式を追記 | Copilot |

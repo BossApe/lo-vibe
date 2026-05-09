@@ -34,6 +34,11 @@ type extractionEnvelope struct {
 type suggestionEnvelope struct {
 	Data struct {
 		Candidates []string `json:"candidates"`
+		Items      []struct {
+			Name        string `json:"name"`
+			Reason      string `json:"reason"`
+			AISuggested bool   `json:"aiSuggested"`
+		} `json:"items"`
 	} `json:"data"`
 }
 
@@ -102,6 +107,9 @@ func TestExternalIntegration_SuggestName_実DBのシステム概要からプロ�
 	var resp suggestionEnvelope
 	require.NoError(t, json.NewDecoder(res.Body).Decode(&resp))
 	assert.NotEmpty(t, resp.Data.Candidates)
+	assert.NotEmpty(t, resp.Data.Items)
+	assert.True(t, resp.Data.Items[0].AISuggested)
+	assert.NotEmpty(t, resp.Data.Items[0].Reason)
 }
 
 func TestExternalIntegration_ExtractFeatures_存在しない概要IDを指定する_異常系(t *testing.T) {

@@ -22,6 +22,8 @@ var projectNamePattern = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9_-]*$`)
 type ProjectService interface {
 	ExtractFeatures(ctx context.Context, overviewID string) (*model.ProjectExtraction, error)
 	SuggestName(ctx context.Context, overviewID string) (*model.ProjectNameSuggestion, error)
+	GetNameSuggestionProfile(ctx context.Context) (*model.NameSuggestionProfile, error)
+	SetNameSuggestionProfile(ctx context.Context, profile string) (*model.NameSuggestionProfile, error)
 	InitDirectory(ctx context.Context, projectName, localPath, template string) (*model.ProjectInitResult, error)
 	CreateRepositoryWithExternal(ctx context.Context, owner, repoName, visibility, localPath, commitMessage string) (*model.ProjectWithExternalResult, error)
 	CreateGitHubProjects(ctx context.Context, id, owner, title string) (*model.GitHubProjectsResult, error)
@@ -32,6 +34,7 @@ type projectService struct {
 	overviewRepo         repository.SystemOverviewRepository
 	githubClient         GitHubClient
 	githubProjectsClient GitHubProjectsClient
+	nameSuggester        ProjectNameSuggester
 }
 
 type systemNameCandidate struct {
@@ -45,12 +48,29 @@ type themedNameCandidate struct {
 	reasons  map[string]string
 }
 
+// ProjectNameSuggester は概要文から神様名候補を提案する外部サジェスタ。
+type ProjectNameSuggester interface {
+	SuggestGodNames(ctx context.Context, overviewContent string) ([]model.ProjectNameCandidate, error)
+}
+
+// ProjectNameProfileController はランタイムのプロファイル切り替えを提供する。
+type ProjectNameProfileController interface {
+	GetProfile() model.NameSuggestionProfile
+	SetProfile(profile string) error
+}
+
 // NewProjectService は ProjectService を生成する。
 func NewProjectService(overviewRepo repository.SystemOverviewRepository) ProjectService {
+	return NewProjectServiceWithNameSuggester(overviewRepo, newEnvProjectNameSuggester())
+}
+
+// NewProjectServiceWithNameSuggester はサジェスタを注入して ProjectService を生成する。
+func NewProjectServiceWithNameSuggester(overviewRepo repository.SystemOverviewRepository, nameSuggester ProjectNameSuggester) ProjectService {
 	return &projectService{
 		overviewRepo:         overviewRepo,
 		githubClient:         newDefaultGitHubClient(),
 		githubProjectsClient: newDefaultGitHubProjectsClient(),
+		nameSuggester:        nameSuggester,
 	}
 }
 
@@ -72,13 +92,40 @@ func (s *projectService) SuggestName(ctx context.Context, overviewID string) (*m
 		return nil, err
 	}
 
-	items := suggestProjectNameCandidates(content)
+	items := s.suggestProjectNameCandidates(ctx, content)
 	candidates := make([]string, 0, len(items))
 	for _, item := range items {
 		candidates = append(candidates, item.Name)
 	}
 
 	return &model.ProjectNameSuggestion{Candidates: candidates, Items: items}, nil
+}
+
+func (s *projectService) GetNameSuggestionProfile(_ context.Context) (*model.NameSuggestionProfile, error) {
+	if controller, ok := s.nameSuggester.(ProjectNameProfileController); ok {
+		profile := controller.GetProfile()
+		return &profile, nil
+	}
+
+	return &model.NameSuggestionProfile{
+		Profile:           "balanced",
+		AvailableProfiles: []string{"fast", "balanced", "quality"},
+		Enabled:           false,
+	}, nil
+}
+
+func (s *projectService) SetNameSuggestionProfile(_ context.Context, profile string) (*model.NameSuggestionProfile, error) {
+	controller, ok := s.nameSuggester.(ProjectNameProfileController)
+	if !ok {
+		return nil, fmt.Errorf("%w: llm profile switch is disabled", ErrValidation)
+	}
+
+	if err := controller.SetProfile(profile); err != nil {
+		return nil, fmt.Errorf("%w: %s", ErrValidation, err.Error())
+	}
+
+	updated := controller.GetProfile()
+	return &updated, nil
 }
 
 func (s *projectService) InitDirectory(_ context.Context, projectName, localPath, template string) (*model.ProjectInitResult, error) {
@@ -246,12 +293,21 @@ var themeGodNames = []themedNameCandidate{
 		},
 	},
 	{
+		keywords: []string{"音楽", "楽曲", "作曲", "楽譜", "ワルツ", "アップテンポ", "メロディ", "music", "song", "compose"},
+		names:    []string{"benzaiten", "amenouzume", "ichikishimahime"},
+		reasons: map[string]string{
+			"benzaiten":       "音楽や芸能を司る神として、作曲や楽曲生成の中心名に自然に合います。\nメロディや和声を扱うシステムに直感的な由来を与えられます。",
+			"amenouzume":      "舞と表現の象徴として、ワルツ調やアップテンポのリズム感と相性が良い候補です。\nパフォーマンス性の高い作曲サービスに向いています。",
+			"ichikishimahime": "芸能や美のイメージを持たせやすい候補です。\n楽譜出力や楽曲提案に、洗練された印象を添えられます。",
+		},
+	},
+	{
 		keywords: []string{"旅行", "地図", "観光", "travel", "map"},
-		names:    []string{"sukunahikona", "watatsumi", "urashima"},
+		names:    []string{"sukunahikona", "watatsumi", "sarutahiko"},
 		reasons: map[string]string{
 			"sukunahikona": "旅や知恵に結びつく存在として知られる名です。\n旅行計画や観光支援サービスに、軽やかで知的な印象を与えます。",
 			"watatsumi":    "海路や移動の広がりを想起しやすい神名です。\n移動や旅程を扱うサービスのスケール感を表現できます。",
-			"urashima":     "旅の物語性を連想しやすい伝承由来の候補です。\n観光体験や周遊提案を重視するサービスに合います。",
+			"sarutahiko":   "道案内と先導の象徴として、旅程管理や移動支援に自然につながる候補です。\n観光案内や経路提案のサービスに合います。",
 		},
 	},
 	{
@@ -265,20 +321,20 @@ var themeGodNames = []themedNameCandidate{
 	},
 	{
 		keywords: []string{"在庫", "物流", "倉庫", "logistics"},
-		names:    []string{"okuninushi", "kotoshironushi", "kuebiko"},
+		names:    []string{"daikoku", "bishamonten", "kotoshironushi"},
 		reasons: map[string]string{
-			"okuninushi":     "多くの物事を調停し流れを整える象徴として扱えます。\n在庫や物流全体を束ねるシステム名に向きます。",
-			"kotoshironushi": "判断と配分のイメージを持たせやすい候補です。\n在庫配置や供給判断を支えるサービスに合います。",
-			"kuebiko":        "現場把握の知恵を連想させる候補です。\n倉庫や在庫状況を把握するサービスに相性が良いです。",
+			"daikoku":        "豊穣と財を司る神として、資産や物資の蓄えを連想しやすい候補です。\n在庫管理や棚卸の基盤名に向いています。",
+			"bishamonten":    "守護と財宝の象徴として、在庫や資産を守る意味づけがしやすい候補です。\n倉庫・物流の管理システムに強い印象を与えられます。",
+			"kotoshironushi": "判断と配分の神として、在庫の振り分けや供給判断に寄せやすい候補です。\n入出庫や補充のバランスを扱うシステムに合います。",
 		},
 	},
 	{
 		keywords: []string{"医療", "健康", "health", "病院", "薬"},
-		names:    []string{"onamuchi", "sukunahikona", "kagamitsukuri"},
+		names:    []string{"onamuchi", "sukunahikona", "kuebiko"},
 		reasons: map[string]string{
-			"onamuchi":      "医療や救済の伝承と結びつく候補です。\n健康支援サービスに穏やかな由来を与えられます。",
-			"sukunahikona":  "医療知識と旅の知恵を持つ存在として親和性があります。\nヘルスケア領域のAI提案名として説得力があります。",
-			"kagamitsukuri": "支援ツールや診療補助を連想させる候補です。\n補助的な医療サービス名として使えます。",
+			"onamuchi":     "医療や救済の伝承と結びつく候補です。\n健康支援サービスに穏やかな由来を与えられます。",
+			"sukunahikona": "医療知識と旅の知恵を持つ存在として親和性があります。\nヘルスケア領域のAI提案名として説得力があります。",
+			"kuebiko":      "観察と見通しの神として、症状の把握や診断支援の意味づけに寄せやすい候補です。\n健康管理や診療補助のサービスに合います。",
 		},
 	},
 	{
@@ -310,38 +366,75 @@ var themeGodNames = []themedNameCandidate{
 	},
 }
 
-func suggestProjectNameCandidates(content string) []model.ProjectNameCandidate {
+func (s *projectService) suggestProjectNameCandidates(ctx context.Context, content string) []model.ProjectNameCandidate {
 	lower := strings.ToLower(content)
+	godCandidates := suggestGodNameCandidates(lower)
+	romajiCandidates := suggestRomajiNameCandidates(lower)
 
+	if len(godCandidates) > 0 {
+		if len(romajiCandidates) > 0 {
+			return uniqueProjectNameCandidates(append(godCandidates, romajiCandidates...))
+		}
+		return uniqueProjectNameCandidates(godCandidates)
+	}
+
+	if s.nameSuggester != nil {
+		if aiCandidates, err := s.nameSuggester.SuggestGodNames(ctx, content); err == nil {
+			validated := validateAIProjectNameCandidates(aiCandidates)
+			if len(validated) > 0 {
+				if len(romajiCandidates) > 0 {
+					return uniqueProjectNameCandidates(append(validated, romajiCandidates...))
+				}
+				return uniqueProjectNameCandidates(validated)
+			}
+		}
+	}
+
+	if len(romajiCandidates) > 0 {
+		return uniqueProjectNameCandidates(append(defaultGodFallbackCandidates(), romajiCandidates...))
+	}
+
+	return uniqueProjectNameCandidates(defaultGodFallbackCandidates())
+}
+
+func suggestRomajiNameCandidates(lower string) []model.ProjectNameCandidate {
 	for _, entry := range systemNameRomaji {
-		if containsAny(lower, entry.keywords) {
-			base := entry.romaji
-			return []model.ProjectNameCandidate{
-				{Name: base, AISuggested: false},
-				{Name: base + "-core", AISuggested: false},
-				{Name: base + "-app", AISuggested: false},
-			}
+		if !containsAny(lower, entry.keywords) {
+			continue
+		}
+		base := entry.romaji
+		return []model.ProjectNameCandidate{
+			{Name: base, AISuggested: false},
+			{Name: base + "-core", AISuggested: false},
+			{Name: base + "-app", AISuggested: false},
 		}
 	}
+	return nil
+}
 
+func suggestGodNameCandidates(lower string) []model.ProjectNameCandidate {
 	for _, entry := range themeGodNames {
-		if containsAny(lower, entry.keywords) {
-			out := make([]model.ProjectNameCandidate, 0, len(entry.names))
-			for _, name := range entry.names {
-				out = append(out, model.ProjectNameCandidate{
-					Name:        name,
-					Reason:      entry.reasons[name],
-					AISuggested: true,
-				})
-			}
-			return uniqueProjectNameCandidates(out)
+		if !containsAny(lower, entry.keywords) {
+			continue
 		}
+		out := make([]model.ProjectNameCandidate, 0, len(entry.names))
+		for _, name := range entry.names {
+			out = append(out, model.ProjectNameCandidate{
+				Name:        name,
+				Reason:      entry.reasons[name],
+				AISuggested: true,
+			})
+		}
+		return out
 	}
+	return nil
+}
 
+func defaultGodFallbackCandidates() []model.ProjectNameCandidate {
 	return []model.ProjectNameCandidate{
-		{Name: "musuhi-project", AISuggested: false},
 		{Name: "amenominakanushi", Reason: "全体を束ねる起点という意味合いから AI が補助候補として選びました。\n要件がまだ粗い段階でも、基盤的なプロジェクト名として扱いやすい名前です。", AISuggested: true},
 		{Name: "okuninushi", Reason: "多様な要素をまとめ上げる象徴として AI が選んだ候補です。\n用途が広いサービスに対して、柔軟で親しみやすい由来を持たせられます。", AISuggested: true},
+		{Name: "musuhi-project", AISuggested: false},
 	}
 }
 

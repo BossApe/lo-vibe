@@ -40,6 +40,22 @@ func (m *mockProjectService) SuggestName(ctx context.Context, overviewID string)
 	return args.Get(0).(*model.ProjectNameSuggestion), args.Error(1)
 }
 
+func (m *mockProjectService) GetNameSuggestionProfile(ctx context.Context) (*model.NameSuggestionProfile, error) {
+	args := m.Called(ctx)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.NameSuggestionProfile), args.Error(1)
+}
+
+func (m *mockProjectService) SetNameSuggestionProfile(ctx context.Context, profile string) (*model.NameSuggestionProfile, error) {
+	args := m.Called(ctx, profile)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.NameSuggestionProfile), args.Error(1)
+}
+
 func (m *mockProjectService) InitDirectory(ctx context.Context, projectName, localPath, template string) (*model.ProjectInitResult, error) {
 	args := m.Called(ctx, projectName, localPath, template)
 	if args.Get(0) == nil {
@@ -77,6 +93,8 @@ func newProjectTestServer(svc service.ProjectService) *httptest.Server {
 	mux := http.NewServeMux()
 	mux.HandleFunc("POST /api/v1/projects/extract-features", ph.ExtractFeatures)
 	mux.HandleFunc("POST /api/v1/projects/suggest-name", ph.SuggestName)
+	mux.HandleFunc("GET /api/v1/projects/name-suggestion-profile", ph.GetNameSuggestionProfile)
+	mux.HandleFunc("PUT /api/v1/projects/name-suggestion-profile", ph.SetNameSuggestionProfile)
 	mux.HandleFunc("POST /api/v1/projects/init-directory", ph.InitDirectory)
 	mux.HandleFunc("POST /api/v1/projects/with-external", ph.WithExternal)
 	mux.HandleFunc("POST /api/v1/projects/{id}/github-projects", ph.GitHubProjects)
@@ -176,11 +194,11 @@ func TestIntegration_SuggestName_有効な概要IDからプロジェクト名候
 	overviewID := uuid.New().String()
 	svc.On("SuggestName", mock.Anything, overviewID).Return(
 		&model.ProjectNameSuggestion{
-			Candidates: []string{"sukunahikona", "watatsumi", "urashima"},
+			Candidates: []string{"sukunahikona", "watatsumi", "sarutahiko"},
 			Items: []model.ProjectNameCandidate{
 				{Name: "sukunahikona", Reason: "旅行支援に合う神名", AISuggested: true},
 				{Name: "watatsumi", Reason: "移動の広がりを表す神名", AISuggested: true},
-				{Name: "urashima", Reason: "旅の物語性を持つ伝承名", AISuggested: true},
+				{Name: "sarutahiko", Reason: "道案内と先導を表す神名", AISuggested: true},
 			},
 		},
 		nil,
@@ -257,6 +275,55 @@ func TestIntegration_SuggestName_不正なJSONでプロジェクト名候補を�
 	assert.NoError(t, json.NewDecoder(res.Body).Decode(&resp))
 	errBody := resp["error"].(map[string]any)
 	assert.Equal(t, "BAD_REQUEST", errBody["code"])
+}
+
+func TestIntegration_GetNameSuggestionProfile_現在のプロファイルを取得する_正常系(t *testing.T) {
+	svc := new(mockProjectService)
+	svc.On("GetNameSuggestionProfile", mock.Anything).Return(
+		&model.NameSuggestionProfile{
+			Profile:           "balanced",
+			AvailableProfiles: []string{"fast", "balanced", "quality"},
+			Enabled:           true,
+		}, nil,
+	)
+	srv := newProjectTestServer(svc)
+	defer srv.Close()
+
+	res, err := http.Get(srv.URL + "/api/v1/projects/name-suggestion-profile")
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusOK, res.StatusCode)
+
+	var resp map[string]any
+	assert.NoError(t, json.NewDecoder(res.Body).Decode(&resp))
+	data := resp["data"].(map[string]any)
+	assert.Equal(t, "balanced", data["profile"])
+	svc.AssertExpectations(t)
+}
+
+func TestIntegration_SetNameSuggestionProfile_プロファイルを更新する_正常系(t *testing.T) {
+	svc := new(mockProjectService)
+	svc.On("SetNameSuggestionProfile", mock.Anything, "quality").Return(
+		&model.NameSuggestionProfile{
+			Profile:           "quality",
+			AvailableProfiles: []string{"fast", "balanced", "quality"},
+			Enabled:           true,
+		}, nil,
+	)
+	srv := newProjectTestServer(svc)
+	defer srv.Close()
+
+	req, err := http.NewRequest(http.MethodPut, srv.URL+"/api/v1/projects/name-suggestion-profile", bytes.NewBufferString(`{"profile":"quality"}`))
+	assert.NoError(t, err)
+	req.Header.Set("Content-Type", "application/json")
+	res, err := http.DefaultClient.Do(req)
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusOK, res.StatusCode)
+
+	var resp map[string]any
+	assert.NoError(t, json.NewDecoder(res.Body).Decode(&resp))
+	data := resp["data"].(map[string]any)
+	assert.Equal(t, "quality", data["profile"])
+	svc.AssertExpectations(t)
 }
 
 // --- InitDirectory ---

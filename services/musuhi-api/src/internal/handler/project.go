@@ -36,6 +36,10 @@ type withExternalRequest struct {
 	CommitMessage string `json:"commitMessage"`
 }
 
+type profileRequest struct {
+	Profile string `json:"profile"`
+}
+
 // ExtractFeatures は POST /api/v1/projects/extract-features を処理する。
 func (h *ProjectHandler) ExtractFeatures(w http.ResponseWriter, r *http.Request) {
 	var req overviewIDRequest
@@ -62,6 +66,34 @@ func (h *ProjectHandler) SuggestName(w http.ResponseWriter, r *http.Request) {
 	}
 
 	result, err := h.svc.SuggestName(r.Context(), req.OverviewID)
+	if err != nil {
+		handleProjectServiceError(w, err)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, dataEnvelope{Data: result})
+}
+
+// GetNameSuggestionProfile は GET /api/v1/projects/name-suggestion-profile を処理する。
+func (h *ProjectHandler) GetNameSuggestionProfile(w http.ResponseWriter, r *http.Request) {
+	result, err := h.svc.GetNameSuggestionProfile(r.Context())
+	if err != nil {
+		handleProjectServiceError(w, err)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, dataEnvelope{Data: result})
+}
+
+// SetNameSuggestionProfile は PUT /api/v1/projects/name-suggestion-profile を処理する。
+func (h *ProjectHandler) SetNameSuggestionProfile(w http.ResponseWriter, r *http.Request) {
+	var req profileRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeError(w, http.StatusBadRequest, "BAD_REQUEST", "リクエストの形式が不正です", nil)
+		return
+	}
+
+	result, err := h.svc.SetNameSuggestionProfile(r.Context(), req.Profile)
 	if err != nil {
 		handleProjectServiceError(w, err)
 		return
