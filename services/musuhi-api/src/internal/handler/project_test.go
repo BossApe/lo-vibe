@@ -53,6 +53,22 @@ func (m *mockProjectService) CreateRepositoryWithExternal(ctx context.Context, o
 	return args.Get(0).(*model.ProjectWithExternalResult), args.Error(1)
 }
 
+func (m *mockProjectService) CreateGitHubProjects(ctx context.Context, id, owner, title string) (*model.GitHubProjectsResult, error) {
+	args := m.Called(ctx, id, owner, title)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.GitHubProjectsResult), args.Error(1)
+}
+
+func (m *mockProjectService) CreatePhase0Tasks(ctx context.Context, id, owner, projectsID string) (*model.Phase0TasksResult, error) {
+	args := m.Called(ctx, id, owner, projectsID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.Phase0TasksResult), args.Error(1)
+}
+
 func TestProjectHandler_ExtractFeatures_有効な概要IDから機能一覧と構成要素を抽出する_正常系(t *testing.T) {
 	svc := new(mockProjectService)
 	h := NewProjectHandler(svc)
@@ -197,6 +213,65 @@ func TestProjectHandler_WithExternal_有効な入力でGitHubリポジトリ作�
 	data := resp["data"].(map[string]any)
 	assert.Equal(t, "success", data["pushStatus"])
 	assert.Equal(t, "https://github.com/BossApe/demo-project", data["repositoryUrl"])
+	svc.AssertExpectations(t)
+}
+
+func TestProjectHandler_GitHubProjects_有効な入力でProjectsボードを作成する_正常系(t *testing.T) {
+	svc := new(mockProjectService)
+	h := NewProjectHandler(svc)
+
+	svc.On("CreateGitHubProjects", mock.Anything, "project-1", "BossApe", "Musuhi Board").Return(
+		&model.GitHubProjectsResult{
+			ProjectsURL: "https://github.com/orgs/BossApe/projects/77",
+			ProjectsID:  "PVT_test_001",
+			Status:      "success",
+		}, nil,
+	)
+
+	body := `{"owner":"BossApe","title":"Musuhi Board"}`
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/projects/project-1/github-projects", bytes.NewBufferString(body))
+	req.SetPathValue("id", "project-1")
+	rec := httptest.NewRecorder()
+
+	h.GitHubProjects(rec, req)
+
+	assert.Equal(t, http.StatusCreated, rec.Code)
+	var resp map[string]any
+	assert.NoError(t, json.Unmarshal(rec.Body.Bytes(), &resp))
+	data := resp["data"].(map[string]any)
+	assert.Equal(t, "success", data["status"])
+	assert.Equal(t, "PVT_test_001", data["projectsId"])
+	svc.AssertExpectations(t)
+}
+
+func TestProjectHandler_Phase0Tasks_有効な入力でPhase0タスクを登録する_正常系(t *testing.T) {
+	svc := new(mockProjectService)
+	h := NewProjectHandler(svc)
+
+	svc.On("CreatePhase0Tasks", mock.Anything, "project-1", "BossApe", "PVT_test_001").Return(
+		&model.Phase0TasksResult{
+			Tasks: []*model.Phase0Task{
+				{ID: "PVTI_1", Title: "PH0: 提案・要求仕様・要件定義", Type: "Phase"},
+				{ID: "PVTI_2", Title: "SP0-1: 提案・要求仕様作成", Type: "Sprint"},
+			},
+			Status: "success",
+		}, nil,
+	)
+
+	body := `{"owner":"BossApe","projectsId":"PVT_test_001"}`
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/projects/project-1/phase0-tasks", bytes.NewBufferString(body))
+	req.SetPathValue("id", "project-1")
+	rec := httptest.NewRecorder()
+
+	h.Phase0Tasks(rec, req)
+
+	assert.Equal(t, http.StatusCreated, rec.Code)
+	var resp map[string]any
+	assert.NoError(t, json.Unmarshal(rec.Body.Bytes(), &resp))
+	data := resp["data"].(map[string]any)
+	assert.Equal(t, "success", data["status"])
+	tasks := data["tasks"].([]any)
+	assert.Len(t, tasks, 2)
 	svc.AssertExpectations(t)
 }
 

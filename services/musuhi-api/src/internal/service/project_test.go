@@ -24,12 +24,32 @@ type mockGitHubClient struct {
 	mock.Mock
 }
 
+type mockGitHubProjectsClient struct {
+	mock.Mock
+}
+
 func (m *mockGitHubClient) CreateRepositoryAndInitialPush(ctx context.Context, owner, repoName, visibility, localPath, commitMessage string) (*model.ProjectWithExternalResult, error) {
 	args := m.Called(ctx, owner, repoName, visibility, localPath, commitMessage)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*model.ProjectWithExternalResult), args.Error(1)
+}
+
+func (m *mockGitHubProjectsClient) CreateProject(ctx context.Context, owner, title string) (*model.GitHubProjectsResult, error) {
+	args := m.Called(ctx, owner, title)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*model.GitHubProjectsResult), args.Error(1)
+}
+
+func (m *mockGitHubProjectsClient) AddPhase0Tasks(ctx context.Context, owner, projectID string) ([]*model.Phase0Task, error) {
+	args := m.Called(ctx, owner, projectID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*model.Phase0Task), args.Error(1)
 }
 
 func (m *mockProjectOverviewRepository) Create(ctx context.Context, content string) (*model.SystemOverview, error) {
@@ -249,4 +269,61 @@ func TestProjectService_CreateRepositoryWithExternal_GitHub側でリポジトリ
 	_, err := svc.CreateRepositoryWithExternal(context.Background(), "BossApe", "demo-project", "private", tmpDir, "initial commit")
 	assert.ErrorIs(t, err, ErrValidation)
 	gh.AssertExpectations(t)
+}
+
+func TestProjectService_CreateGitHubProjects_有効な入力でProjectsボードを作成する_正常系(t *testing.T) {
+	repo := new(mockProjectOverviewRepository)
+	ghProjects := new(mockGitHubProjectsClient)
+	svc := &projectService{overviewRepo: repo, githubProjectsClient: ghProjects}
+
+	ghProjects.On("CreateProject", mock.Anything, "BossApe", "Musuhi Board").Return(
+		&model.GitHubProjectsResult{
+			ProjectsURL: "https://github.com/orgs/BossApe/projects/77",
+			ProjectsID:  "PVT_test_001",
+			Status:      "success",
+		}, nil,
+	)
+
+	got, err := svc.CreateGitHubProjects(context.Background(), "project-1", "BossApe", "Musuhi Board")
+	assert.NoError(t, err)
+	assert.Equal(t, "success", got.Status)
+	assert.Equal(t, "PVT_test_001", got.ProjectsID)
+	ghProjects.AssertExpectations(t)
+}
+
+func TestProjectService_CreateGitHubProjects_ownerを空で指定してProjectsボードを作成する_異常系(t *testing.T) {
+	repo := new(mockProjectOverviewRepository)
+	ghProjects := new(mockGitHubProjectsClient)
+	svc := &projectService{overviewRepo: repo, githubProjectsClient: ghProjects}
+
+	_, err := svc.CreateGitHubProjects(context.Background(), "project-1", "", "Musuhi Board")
+	assert.ErrorIs(t, err, ErrValidation)
+}
+
+func TestProjectService_CreatePhase0Tasks_有効な入力でPhase0タスクを登録する_正常系(t *testing.T) {
+	repo := new(mockProjectOverviewRepository)
+	ghProjects := new(mockGitHubProjectsClient)
+	svc := &projectService{overviewRepo: repo, githubProjectsClient: ghProjects}
+
+	ghProjects.On("AddPhase0Tasks", mock.Anything, "BossApe", "PVT_test_001").Return(
+		[]*model.Phase0Task{
+			{ID: "PVTI_1", Title: "PH0: 提案・要求仕様・要件定義", Type: "Phase"},
+			{ID: "PVTI_2", Title: "SP0-1: 提案・要求仕様作成", Type: "Sprint"},
+		}, nil,
+	)
+
+	got, err := svc.CreatePhase0Tasks(context.Background(), "project-1", "BossApe", "PVT_test_001")
+	assert.NoError(t, err)
+	assert.Equal(t, "success", got.Status)
+	assert.Len(t, got.Tasks, 2)
+	ghProjects.AssertExpectations(t)
+}
+
+func TestProjectService_CreatePhase0Tasks_projectsIdを空で指定してPhase0タスクを登録する_異常系(t *testing.T) {
+	repo := new(mockProjectOverviewRepository)
+	ghProjects := new(mockGitHubProjectsClient)
+	svc := &projectService{overviewRepo: repo, githubProjectsClient: ghProjects}
+
+	_, err := svc.CreatePhase0Tasks(context.Background(), "project-1", "BossApe", "")
+	assert.ErrorIs(t, err, ErrValidation)
 }

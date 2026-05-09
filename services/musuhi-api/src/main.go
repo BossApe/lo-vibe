@@ -60,6 +60,8 @@ func main() {
 	mux.HandleFunc("POST /api/v1/projects/suggest-name", projectHandler.SuggestName)
 	mux.HandleFunc("POST /api/v1/projects/init-directory", projectHandler.InitDirectory)
 	mux.HandleFunc("POST /api/v1/projects/with-external", projectHandler.WithExternal)
+	mux.HandleFunc("POST /api/v1/projects/{id}/github-projects", projectHandler.GitHubProjects)
+	mux.HandleFunc("POST /api/v1/projects/{id}/phase0-tasks", projectHandler.Phase0Tasks)
 
 	// ミドルウェアチェーン
 	h := middleware.Logger(middleware.CORS(mux))

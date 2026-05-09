@@ -18,17 +18,20 @@ import (
 
 var projectNamePattern = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9_-]*$`)
 
-// ProjectService は FR-002 のビジネスロジックインターフェース。
+// ProjectService は FR-002〜FR-004 のビジネスロジックインターフェース。
 type ProjectService interface {
 	ExtractFeatures(ctx context.Context, overviewID string) (*model.ProjectExtraction, error)
 	SuggestName(ctx context.Context, overviewID string) (*model.ProjectNameSuggestion, error)
 	InitDirectory(ctx context.Context, projectName, localPath, template string) (*model.ProjectInitResult, error)
 	CreateRepositoryWithExternal(ctx context.Context, owner, repoName, visibility, localPath, commitMessage string) (*model.ProjectWithExternalResult, error)
+	CreateGitHubProjects(ctx context.Context, id, owner, title string) (*model.GitHubProjectsResult, error)
+	CreatePhase0Tasks(ctx context.Context, id, owner, projectsID string) (*model.Phase0TasksResult, error)
 }
 
 type projectService struct {
-	overviewRepo repository.SystemOverviewRepository
-	githubClient GitHubClient
+	overviewRepo         repository.SystemOverviewRepository
+	githubClient         GitHubClient
+	githubProjectsClient GitHubProjectsClient
 }
 
 type systemNameCandidate struct {
@@ -44,7 +47,11 @@ type themedNameCandidate struct {
 
 // NewProjectService は ProjectService を生成する。
 func NewProjectService(overviewRepo repository.SystemOverviewRepository) ProjectService {
-	return &projectService{overviewRepo: overviewRepo, githubClient: newDefaultGitHubClient()}
+	return &projectService{
+		overviewRepo:         overviewRepo,
+		githubClient:         newDefaultGitHubClient(),
+		githubProjectsClient: newDefaultGitHubProjectsClient(),
+	}
 }
 
 func (s *projectService) ExtractFeatures(ctx context.Context, overviewID string) (*model.ProjectExtraction, error) {

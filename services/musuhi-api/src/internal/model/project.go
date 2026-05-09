@@ -33,3 +33,23 @@ type ProjectWithExternalResult struct {
 	ExternalProjectID string `json:"externalProjectId"`
 	PushStatus        string `json:"pushStatus"`
 }
+
+// GitHubProjectsResult は GitHub Projects v2 ボード作成結果を表す。
+type GitHubProjectsResult struct {
+	ProjectsURL string `json:"projectsUrl"`
+	ProjectsID  string `json:"projectsId"`
+	Status      string `json:"status"`
+}
+
+// Phase0Task は Phase0 の1タスクアイテムを表す。
+type Phase0Task struct {
+	ID    string `json:"id"`
+	Title string `json:"title"`
+	Type  string `json:"type"`
+}
+
+// Phase0TasksResult は Phase0 タスク登録結果を表す。
+type Phase0TasksResult struct {
+	Tasks  []*Phase0Task `json:"tasks"`
+	Status string        `json:"status"`
+}

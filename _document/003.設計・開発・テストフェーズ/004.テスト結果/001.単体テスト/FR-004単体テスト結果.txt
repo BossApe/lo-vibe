@@ -1,0 +1,27 @@
+[実行日時] 2026-05-09 11:54:22
+[対象ID] FR-004
+[テスト種別] 単体テスト
+[コマンド] go test ./internal/handler ./internal/service -count=1 -run GitHubProjects|Phase0Tasks|CreateGitHubProjects|CreatePhase0Tasks|GHProjectsClient -v
+
+=== RUN   TestProjectHandler_GitHubProjects_有効な入力でProjectsボードを作成する_正常系
+--- PASS: TestProjectHandler_GitHubProjects_有効な入力でProjectsボードを作成する_正常系 (0.00s)
+=== RUN   TestProjectHandler_Phase0Tasks_有効な入力でPhase0タスクを登録する_正常系
+--- PASS: TestProjectHandler_Phase0Tasks_有効な入力でPhase0タスクを登録する_正常系 (0.00s)
+PASS
+ok  	musuhi-api/internal/handler	0.369s
+=== RUN   TestGHProjectsClient_CreateProject_GitHubProjectsを作成してカスタムフィールドを追加する_正常系
+--- PASS: TestGHProjectsClient_CreateProject_GitHubProjectsを作成してカスタムフィールドを追加する_正常系 (0.00s)
+=== RUN   TestGHProjectsClient_AddPhase0Tasks_Phase0タスクをProjectsへ登録する_正常系
+--- PASS: TestGHProjectsClient_AddPhase0Tasks_Phase0タスクをProjectsへ登録する_正常系 (0.00s)
+=== RUN   TestProjectService_CreateGitHubProjects_有効な入力でProjectsボードを作成する_正常系
+--- PASS: TestProjectService_CreateGitHubProjects_有効な入力でProjectsボードを作成する_正常系 (0.00s)
+=== RUN   TestProjectService_CreateGitHubProjects_ownerを空で指定してProjectsボードを作成する_異常系
+--- PASS: TestProjectService_CreateGitHubProjects_ownerを空で指定してProjectsボードを作成する_異常系 (0.00s)
+=== RUN   TestProjectService_CreatePhase0Tasks_有効な入力でPhase0タスクを登録する_正常系
+--- PASS: TestProjectService_CreatePhase0Tasks_有効な入力でPhase0タスクを登録する_正常系 (0.00s)
+=== RUN   TestProjectService_CreatePhase0Tasks_projectsIdを空で指定してPhase0タスクを登録する_異常系
+--- PASS: TestProjectService_CreatePhase0Tasks_projectsIdを空で指定してPhase0タスクを登録する_異常系 (0.00s)
+PASS
+ok  	musuhi-api/internal/service	0.562s
+
+[終了コード] 0

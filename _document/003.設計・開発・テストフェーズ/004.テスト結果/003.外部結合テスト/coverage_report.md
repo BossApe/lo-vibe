@@ -1,13 +1,9 @@
-# External Integration Test Coverage Report
+# External Integration Coverage Report
 
 - 実行日時: 2026-05-09
-- 対象ID: FR-003
-- コマンド: `go test -cover ./test/external`
+- 対象ID: FR-004
+- コマンド: `go test -cover ./internal/service -run GHProjectsClient`
 
 ## 結果
 
-- `musuhi-api/test/external`: [no statements]
-
-## 備考
-
-- 外部結合テストは API レベルの検証が中心で、カバレッジ対象のステートメントを持たないため `[no statements]` と表示される。
+ok  	musuhi-api/internal/service	0.212s	coverage: 26.6% of statements
