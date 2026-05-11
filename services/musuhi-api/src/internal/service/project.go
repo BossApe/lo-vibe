@@ -1,5 +1,8 @@
 package service
 
+// ProjectService はプロジェクトのビジネスロジックを提供するインターフェース。
+// 機能抽出・プロジェクト名提案・初期ディレクトリ生成・外部連携などを扱う。
+
 import (
 	"context"
 	"errors"
@@ -20,16 +23,26 @@ var projectNamePattern = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9_-]*$`)
 
 // ProjectService は FR-002〜FR-004 のビジネスロジックインターフェース。
 type ProjectService interface {
+	// ExtractFeatures は概要IDから機能一覧と構成要素を抽出します。
 	ExtractFeatures(ctx context.Context, overviewID string) (*model.ProjectExtraction, error)
+	// SuggestName は概要IDからプロジェクト名候補を提案します。
 	SuggestName(ctx context.Context, overviewID string) (*model.ProjectNameSuggestion, error)
+	// GetNameSuggestionProfile は現在のプロファイル設定を取得します。
 	GetNameSuggestionProfile(ctx context.Context) (*model.NameSuggestionProfile, error)
+	// SetNameSuggestionProfile はプロファイル設定を変更します。
 	SetNameSuggestionProfile(ctx context.Context, profile string) (*model.NameSuggestionProfile, error)
+	// InitDirectory は指定したパスにプロジェクトの初期ディレクトリ構成を生成します。
 	InitDirectory(ctx context.Context, projectName, localPath, template string) (*model.ProjectInitResult, error)
+	// CreateRepositoryWithExternal はGitHubリポジトリ作成と初回pushを実行します。
 	CreateRepositoryWithExternal(ctx context.Context, owner, repoName, visibility, localPath, commitMessage string) (*model.ProjectWithExternalResult, error)
+	// CreateGitHubProjects はGitHub Projectsボードを作成します。
 	CreateGitHubProjects(ctx context.Context, id, owner, title string) (*model.GitHubProjectsResult, error)
+	// CreatePhase0Tasks はPhase0タスクをProjectsボードに登録します。
 	CreatePhase0Tasks(ctx context.Context, id, owner, projectsID string) (*model.Phase0TasksResult, error)
 }
 
+// projectService は ProjectService の実装です。
+// 各種リポジトリ・外部クライアントをDIします。
 type projectService struct {
 	overviewRepo         repository.SystemOverviewRepository
 	githubClient         GitHubClient
@@ -37,11 +50,13 @@ type projectService struct {
 	nameSuggester        ProjectNameSuggester
 }
 
+// systemNameCandidate はローマ字名候補のキーワードと名称を保持します。
 type systemNameCandidate struct {
 	keywords []string
 	romaji   string
 }
 
+// themedNameCandidate は神名候補のキーワード・候補名・理由を保持します。
 type themedNameCandidate struct {
 	keywords []string
 	names    []string
@@ -49,22 +64,24 @@ type themedNameCandidate struct {
 }
 
 // ProjectNameSuggester は概要文から神様名候補を提案する外部サジェスタ。
+// ProjectNameSuggester は概要文から神様名候補を提案する外部サジェスタ。
 type ProjectNameSuggester interface {
 	SuggestGodNames(ctx context.Context, overviewContent string) ([]model.ProjectNameCandidate, error)
 }
 
 // ProjectNameProfileController はランタイムのプロファイル切り替えを提供する。
+// ProjectNameProfileController はランタイムのプロファイル切り替えを提供するインターフェース。
 type ProjectNameProfileController interface {
 	GetProfile() model.NameSuggestionProfile
 	SetProfile(profile string) error
 }
 
-// NewProjectService は ProjectService を生成する。
+// NewProjectService は ProjectService を生成します。
 func NewProjectService(overviewRepo repository.SystemOverviewRepository) ProjectService {
 	return NewProjectServiceWithNameSuggester(overviewRepo, newEnvProjectNameSuggester())
 }
 
-// NewProjectServiceWithNameSuggester はサジェスタを注入して ProjectService を生成する。
+// NewProjectServiceWithNameSuggester はサジェスタを注入して ProjectService を生成します。
 func NewProjectServiceWithNameSuggester(overviewRepo repository.SystemOverviewRepository, nameSuggester ProjectNameSuggester) ProjectService {
 	return &projectService{
 		overviewRepo:         overviewRepo,
@@ -74,6 +91,7 @@ func NewProjectServiceWithNameSuggester(overviewRepo repository.SystemOverviewRe
 	}
 }
 
+// ExtractFeatures は概要IDから機能一覧と構成要素を抽出します。
 func (s *projectService) ExtractFeatures(ctx context.Context, overviewID string) (*model.ProjectExtraction, error) {
 	content, err := s.loadOverviewContent(ctx, overviewID)
 	if err != nil {
@@ -86,6 +104,7 @@ func (s *projectService) ExtractFeatures(ctx context.Context, overviewID string)
 	return &model.ProjectExtraction{Features: features, Components: components}, nil
 }
 
+// SuggestName は概要IDからプロジェクト名候補を提案します。
 func (s *projectService) SuggestName(ctx context.Context, overviewID string) (*model.ProjectNameSuggestion, error) {
 	content, err := s.loadOverviewContent(ctx, overviewID)
 	if err != nil {
@@ -101,6 +120,7 @@ func (s *projectService) SuggestName(ctx context.Context, overviewID string) (*m
 	return &model.ProjectNameSuggestion{Candidates: candidates, Items: items}, nil
 }
 
+// GetNameSuggestionProfile は現在のプロファイル設定を取得します。
 func (s *projectService) GetNameSuggestionProfile(_ context.Context) (*model.NameSuggestionProfile, error) {
 	if controller, ok := s.nameSuggester.(ProjectNameProfileController); ok {
 		profile := controller.GetProfile()
@@ -114,6 +134,7 @@ func (s *projectService) GetNameSuggestionProfile(_ context.Context) (*model.Nam
 	}, nil
 }
 
+// SetNameSuggestionProfile はプロファイル設定を変更します。
 func (s *projectService) SetNameSuggestionProfile(_ context.Context, profile string) (*model.NameSuggestionProfile, error) {
 	controller, ok := s.nameSuggester.(ProjectNameProfileController)
 	if !ok {
@@ -128,6 +149,7 @@ func (s *projectService) SetNameSuggestionProfile(_ context.Context, profile str
 	return &updated, nil
 }
 
+// InitDirectory は指定したパスにプロジェクトの初期ディレクトリ構成を生成します。
 func (s *projectService) InitDirectory(_ context.Context, projectName, localPath, template string) (*model.ProjectInitResult, error) {
 	if strings.TrimSpace(projectName) == "" {
 		return nil, fmt.Errorf("%w: projectName is required", ErrValidation)
@@ -186,6 +208,7 @@ func (s *projectService) InitDirectory(_ context.Context, projectName, localPath
 	}, nil
 }
 
+// loadOverviewContent は概要IDから内容を取得します。
 func (s *projectService) loadOverviewContent(ctx context.Context, overviewID string) (string, error) {
 	id, err := uuid.Parse(overviewID)
 	if err != nil {
@@ -203,6 +226,7 @@ func (s *projectService) loadOverviewContent(ctx context.Context, overviewID str
 	return overview.Content, nil
 }
 
+// extractFeatureCandidates は概要文から機能候補を抽出します。
 func extractFeatureCandidates(content string) []string {
 	items := tokenizeLines(content)
 	if len(items) == 0 {
@@ -221,6 +245,7 @@ func extractFeatureCandidates(content string) []string {
 	return uniqueInOrder(features)
 }
 
+// extractComponentCandidates は概要文から構成要素候補を抽出します。
 func extractComponentCandidates(content string) []string {
 	c := strings.ToLower(content)
 	components := make([]string, 0, 5)
@@ -366,6 +391,7 @@ var themeGodNames = []themedNameCandidate{
 	},
 }
 
+// suggestProjectNameCandidates は概要文から神名候補・ローマ字候補・AIサジェストを考慮して返します。
 func (s *projectService) suggestProjectNameCandidates(ctx context.Context, content string) []model.ProjectNameCandidate {
 	lower := strings.ToLower(content)
 	godCandidates := suggestGodNameCandidates(lower)
@@ -397,6 +423,7 @@ func (s *projectService) suggestProjectNameCandidates(ctx context.Context, conte
 	return uniqueProjectNameCandidates(defaultGodFallbackCandidates())
 }
 
+// suggestRomajiNameCandidates は概要文からローマ字名候補を抽出します。
 func suggestRomajiNameCandidates(lower string) []model.ProjectNameCandidate {
 	for _, entry := range systemNameRomaji {
 		if !containsAny(lower, entry.keywords) {
@@ -412,6 +439,7 @@ func suggestRomajiNameCandidates(lower string) []model.ProjectNameCandidate {
 	return nil
 }
 
+// suggestGodNameCandidates は概要文から神名候補を抽出します。
 func suggestGodNameCandidates(lower string) []model.ProjectNameCandidate {
 	for _, entry := range themeGodNames {
 		if !containsAny(lower, entry.keywords) {
@@ -430,6 +458,7 @@ func suggestGodNameCandidates(lower string) []model.ProjectNameCandidate {
 	return nil
 }
 
+// defaultGodFallbackCandidates は神名候補が見つからない場合のデフォルト候補を返します。
 func defaultGodFallbackCandidates() []model.ProjectNameCandidate {
 	return []model.ProjectNameCandidate{
 		{Name: "amenominakanushi", Reason: "全体を束ねる起点という意味合いから AI が補助候補として選びました。\n要件がまだ粗い段階でも、基盤的なプロジェクト名として扱いやすい名前です。", AISuggested: true},
@@ -438,6 +467,7 @@ func defaultGodFallbackCandidates() []model.ProjectNameCandidate {
 	}
 }
 
+// tokenizeLines は概要文を行単位で分割し、前置記号を除去して返します。
 func tokenizeLines(content string) []string {
 	lines := strings.Split(content, "\n")
 	items := make([]string, 0, len(lines))
@@ -455,6 +485,7 @@ func tokenizeLines(content string) []string {
 	return items
 }
 
+// containsAny はbase文字列にいずれかのキーワードが含まれるか判定します。
 func containsAny(base string, keywords []string) bool {
 	for _, k := range keywords {
 		if strings.Contains(base, k) {
@@ -464,6 +495,7 @@ func containsAny(base string, keywords []string) bool {
 	return false
 }
 
+// uniqueInOrder は重複を除去し順序を維持したスライスを返します。
 func uniqueInOrder(values []string) []string {
 	seen := map[string]struct{}{}
 	out := make([]string, 0, len(values))
@@ -477,6 +509,7 @@ func uniqueInOrder(values []string) []string {
 	return out
 }
 
+// uniqueProjectNameCandidates は重複を除去し順序を維持した候補スライスを返します。
 func uniqueProjectNameCandidates(values []model.ProjectNameCandidate) []model.ProjectNameCandidate {
 	seen := map[string]struct{}{}
 	out := make([]model.ProjectNameCandidate, 0, len(values))

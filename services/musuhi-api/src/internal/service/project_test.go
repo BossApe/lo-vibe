@@ -18,18 +18,22 @@ import (
 
 type mockProjectOverviewRepository struct {
 	mock.Mock
+	// mockProjectOverviewRepository は SystemOverviewRepository のモック実装。
 }
 
 type mockGitHubClient struct {
 	mock.Mock
+	// mockGitHubClient は GitHubClient のモック実装。
 }
 
 type mockGitHubProjectsClient struct {
 	mock.Mock
+	// mockGitHubProjectsClient は GitHubProjectsClient のモック実装。
 }
 
 type mockProjectNameSuggester struct {
 	mock.Mock
+	// mockProjectNameSuggester は ProjectNameSuggester のモック実装。
 }
 
 func (m *mockGitHubClient) CreateRepositoryAndInitialPush(ctx context.Context, owner, repoName, visibility, localPath, commitMessage string) (*model.ProjectWithExternalResult, error) {
@@ -88,6 +92,8 @@ func (m *mockProjectOverviewRepository) UpdateByID(ctx context.Context, id uuid.
 	return args.Get(0).(*model.SystemOverview), args.Error(1)
 }
 
+// TestProjectService_ExtractFeatures_有効な概要IDから機能一覧と構成要素を抽出する_正常系
+// 概要IDが有効な場合に機能一覧と構成要素が正しく抽出されることを検証する。
 func TestProjectService_ExtractFeatures_有効な概要IDから機能一覧と構成要素を抽出する_正常系(t *testing.T) {
 	repo := new(mockProjectOverviewRepository)
 	svc := NewProjectService(repo)

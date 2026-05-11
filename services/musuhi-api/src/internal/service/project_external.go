@@ -1,5 +1,7 @@
 package service
 
+// GitHubClient は GitHub リポジトリ作成と initial push の実行を抽象化するインターフェース。
+
 import (
 	"context"
 	"errors"
@@ -17,25 +19,31 @@ type GitHubClient interface {
 	CreateRepositoryAndInitialPush(ctx context.Context, owner, repoName, visibility, localPath, commitMessage string) (*model.ProjectWithExternalResult, error)
 }
 
+// commandExecutor は外部コマンド実行のインターフェース。
 type commandExecutor interface {
 	CombinedOutput(ctx context.Context, name string, args ...string) ([]byte, error)
 }
 
+// defaultCommandExecutor は commandExecutor のデフォルト実装。
 type defaultCommandExecutor struct{}
 
+// CombinedOutput は指定コマンドを実行し、標準出力・標準エラー出力を結合して返します。
 func (e *defaultCommandExecutor) CombinedOutput(ctx context.Context, name string, args ...string) ([]byte, error) {
 	cmd := exec.CommandContext(ctx, name, args...)
 	return cmd.CombinedOutput()
 }
 
+// ghGitHubClient は GitHub CLI を用いた GitHubClient 実装。
 type ghGitHubClient struct {
 	exec commandExecutor
 }
 
+// newDefaultGitHubClient は ghGitHubClient を生成します。
 func newDefaultGitHubClient() GitHubClient {
 	return &ghGitHubClient{exec: &defaultCommandExecutor{}}
 }
 
+// CreateRepositoryWithExternal はGitHubリポジトリ作成と初回pushを実行します。
 func (s *projectService) CreateRepositoryWithExternal(ctx context.Context, owner, repoName, visibility, localPath, commitMessage string) (*model.ProjectWithExternalResult, error) {
 	owner = strings.TrimSpace(owner)
 	repoName = strings.TrimSpace(repoName)
@@ -81,6 +89,7 @@ func (s *projectService) CreateRepositoryWithExternal(ctx context.Context, owner
 	return result, nil
 }
 
+// isKnownGitHubInputError はGitHub CLIの入力エラーを判定します。
 func isKnownGitHubInputError(err error) bool {
 	msg := strings.ToLower(err.Error())
 	return strings.Contains(msg, "already exists") ||
@@ -89,6 +98,7 @@ func isKnownGitHubInputError(err error) bool {
 		strings.Contains(msg, "not logged in")
 }
 
+// CreateRepositoryAndInitialPush はローカルリポジトリ初期化・GitHubリポジトリ作成・初回pushを実行します。
 func (c *ghGitHubClient) CreateRepositoryAndInitialPush(ctx context.Context, owner, repoName, visibility, localPath, commitMessage string) (*model.ProjectWithExternalResult, error) {
 	if err := c.prepareLocalRepository(ctx, localPath, commitMessage); err != nil {
 		return nil, err
@@ -126,6 +136,7 @@ func (c *ghGitHubClient) CreateRepositoryAndInitialPush(ctx context.Context, own
 	}, nil
 }
 
+// prepareLocalRepository はローカルリポジトリの初期化・add・commit・mainブランチ作成・origin削除を行います。
 func (c *ghGitHubClient) prepareLocalRepository(ctx context.Context, localPath, commitMessage string) error {
 	if _, err := c.exec.CombinedOutput(ctx, "git", "-C", localPath, "rev-parse", "--is-inside-work-tree"); err != nil {
 		out, initErr := c.exec.CombinedOutput(ctx, "git", "-C", localPath, "init")

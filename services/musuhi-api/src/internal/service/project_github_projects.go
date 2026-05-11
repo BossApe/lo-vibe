@@ -1,5 +1,7 @@
 package service
 
+// GitHubProjectsClient は GitHub Projects v2 の操作を抽象化するインターフェース。
+
 import (
 	"bytes"
 	"context"
@@ -18,28 +20,32 @@ type GitHubProjectsClient interface {
 }
 
 // graphqlRunner は GitHub GraphQL API リクエストを実行する。
-type graphqlRunner interface {
+// graphqlRunner は GitHub GraphQL API リクエストを実行するインターフェース。
 	RunGraphQL(ctx context.Context, body []byte) ([]byte, error)
 }
 
-type defaultGraphQLRunner struct{}
+// defaultGraphQLRunner は graphqlRunner のデフォルト実装。
 
+// RunGraphQL は gh CLI でGraphQL APIを実行します。
 func (r *defaultGraphQLRunner) RunGraphQL(ctx context.Context, body []byte) ([]byte, error) {
 	cmd := exec.CommandContext(ctx, "gh", "api", "graphql", "--input", "-")
 	cmd.Stdin = bytes.NewReader(body)
 	return cmd.CombinedOutput()
 }
 
+// ghProjectsClient は GitHub Projects v2 操作用のクライアント実装。
 type ghProjectsClient struct {
 	runner graphqlRunner
 }
 
+// newDefaultGitHubProjectsClient は ghProjectsClient を生成します。
 func newDefaultGitHubProjectsClient() GitHubProjectsClient {
 	return &ghProjectsClient{runner: &defaultGraphQLRunner{}}
 }
 
 // --- GraphQL helpers ---
 
+// buildGraphQLBody はGraphQLクエリと変数からリクエストボディを生成します。
 func buildGraphQLBody(query string, variables map[string]any) ([]byte, error) {
 	return json.Marshal(map[string]any{
 		"query":     query,
@@ -47,6 +53,7 @@ func buildGraphQLBody(query string, variables map[string]any) ([]byte, error) {
 	})
 }
 
+// extractGraphQLErrors はGraphQLレスポンスからエラーを抽出します。
 func extractGraphQLErrors(data []byte) error {
 	var resp struct {
 		Errors []struct {
@@ -66,6 +73,7 @@ func extractGraphQLErrors(data []byte) error {
 	return nil
 }
 
+// runGraphQL はGraphQLクエリを実行し、エラーも判定します。
 func (c *ghProjectsClient) runGraphQL(ctx context.Context, query string, variables map[string]any) ([]byte, error) {
 	body, err := buildGraphQLBody(query, variables)
 	if err != nil {
@@ -83,6 +91,7 @@ func (c *ghProjectsClient) runGraphQL(ctx context.Context, query string, variabl
 
 // --- Owner ID resolution ---
 
+// resolveOwnerID はオーナー名からGitHubのユーザーまたは組織IDを解決します。
 func (c *ghProjectsClient) resolveOwnerID(ctx context.Context, owner string) (string, error) {
 	// Try user first
 	out, err := c.runGraphQL(ctx,
@@ -143,6 +152,7 @@ type projectFieldSet struct {
 
 // --- Create project ---
 
+// CreateProject は指定オーナー配下にProjectsボードを作成します。
 func (c *ghProjectsClient) CreateProject(ctx context.Context, owner, title string) (*model.GitHubProjectsResult, error) {
 	ownerID, err := c.resolveOwnerID(ctx, owner)
 	if err != nil {
@@ -187,6 +197,7 @@ func (c *ghProjectsClient) CreateProject(ctx context.Context, owner, title strin
 	}, nil
 }
 
+// createCustomFields はProjectsボードにカスタムフィールドを追加します。
 func (c *ghProjectsClient) createCustomFields(ctx context.Context, projectID string) error {
 	// Type (single select: Phase, Sprint, Ticket)
 	if _, err := c.createSingleSelectField(ctx, projectID, "Type",
@@ -217,6 +228,7 @@ func (c *ghProjectsClient) createCustomFields(ctx context.Context, projectID str
 	return nil
 }
 
+// createSingleSelectField は単一選択フィールドをProjectsボードに追加します。
 func (c *ghProjectsClient) createSingleSelectField(ctx context.Context, projectID, name string, options []string) (string, error) {
 	opts := make([]map[string]string, 0, len(options))
 	for _, o := range options {
@@ -246,6 +258,7 @@ func (c *ghProjectsClient) createSingleSelectField(ctx context.Context, projectI
 	return resp.Data.CreateProjectV2Field.ProjectV2Field.ID, nil
 }
 
+// createTextField はテキストフィールドをProjectsボードに追加します。
 func (c *ghProjectsClient) createTextField(ctx context.Context, projectID, name string) (string, error) {
 	out, err := c.runGraphQL(ctx,
 		`mutation($projectId:ID!,$name:String!){createProjectV2Field(input:{projectId:$projectId,dataType:TEXT,name:$name}){projectV2Field{...on ProjectV2Field{id}}}}`,
@@ -269,6 +282,7 @@ func (c *ghProjectsClient) createTextField(ctx context.Context, projectID, name 
 	return resp.Data.CreateProjectV2Field.ProjectV2Field.ID, nil
 }
 
+// createNumberField は数値フィールドをProjectsボードに追加します。
 func (c *ghProjectsClient) createNumberField(ctx context.Context, projectID, name string) (string, error) {
 	out, err := c.runGraphQL(ctx,
 		`mutation($projectId:ID!,$name:String!){createProjectV2Field(input:{projectId:$projectId,dataType:NUMBER,name:$name}){projectV2Field{...on ProjectV2Field{id}}}}`,
@@ -294,6 +308,7 @@ func (c *ghProjectsClient) createNumberField(ctx context.Context, projectID, nam
 
 // --- Phase0 task definitions ---
 
+// phase0TaskDef はPhase0タスクの定義情報です。
 type phase0TaskDef struct {
 	TaskID   string
 	Title    string
@@ -321,6 +336,7 @@ var phase0TaskDefs = []phase0TaskDef{
 
 // --- Add Phase0 tasks ---
 
+// AddPhase0Tasks はPhase0タスクをProjectsボードに一括登録します。
 func (c *ghProjectsClient) AddPhase0Tasks(ctx context.Context, owner, projectID string) ([]*model.Phase0Task, error) {
 	fields, err := c.getProjectFields(ctx, projectID)
 	if err != nil {
@@ -342,6 +358,7 @@ func (c *ghProjectsClient) AddPhase0Tasks(ctx context.Context, owner, projectID 
 	return tasks, nil
 }
 
+// getProjectFields はProjectsボードのカスタムフィールド情報を取得します。
 func (c *ghProjectsClient) getProjectFields(ctx context.Context, projectID string) (*projectFieldSet, error) {
 	out, err := c.runGraphQL(ctx,
 		`query($id:ID!){node(id:$id){...on ProjectV2{fields(first:20){nodes{`+
@@ -398,6 +415,7 @@ func (c *ghProjectsClient) getProjectFields(ctx context.Context, projectID strin
 	return fs, nil
 }
 
+// addDraftIssue はドラフトIssueをProjectsボードに追加します。
 func (c *ghProjectsClient) addDraftIssue(ctx context.Context, projectID, title, body string) (string, error) {
 	out, err := c.runGraphQL(ctx,
 		`mutation($projectId:ID!,$title:String!,$body:String!){addProjectV2DraftIssue(input:{projectId:$projectId,title:$title,body:$body}){projectItem{id}}}`,
@@ -424,6 +442,7 @@ func (c *ghProjectsClient) addDraftIssue(ctx context.Context, projectID, title, 
 	return resp.Data.AddProjectV2DraftIssue.ProjectItem.ID, nil
 }
 
+// setItemFields はタスクに各種フィールド値を設定します。
 func (c *ghProjectsClient) setItemFields(ctx context.Context, fs *projectFieldSet, itemID string, def phase0TaskDef) error {
 	// Type (single select)
 	if fs.typeFieldID != "" {
