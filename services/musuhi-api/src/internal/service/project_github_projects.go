@@ -19,11 +19,12 @@ type GitHubProjectsClient interface {
 	AddPhase0Tasks(ctx context.Context, owner, projectID string) ([]*model.Phase0Task, error)
 }
 
-// graphqlRunner は GitHub GraphQL API リクエストを実行する。
 // graphqlRunner は GitHub GraphQL API リクエストを実行するインターフェース。
+type graphqlRunner interface {
 	RunGraphQL(ctx context.Context, body []byte) ([]byte, error)
 }
 
+type defaultGraphQLRunner struct{}
 // defaultGraphQLRunner は graphqlRunner のデフォルト実装。
 
 // RunGraphQL は gh CLI でGraphQL APIを実行します。

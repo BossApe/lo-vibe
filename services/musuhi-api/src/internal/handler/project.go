@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 
+	model "musuhi-api/internal/model"
 	"musuhi-api/internal/service"
 )
 
@@ -22,11 +23,7 @@ type overviewIDRequest struct {
 	OverviewID string `json:"overviewId"`
 }
 
-type initDirectoryRequest struct {
-	ProjectName string `json:"projectName"`
-	LocalPath   string `json:"localPath"`
-	Template    string `json:"template"`
-}
+// modelに移動
 
 type withExternalRequest struct {
 	Owner         string `json:"owner"`
@@ -104,13 +101,13 @@ func (h *ProjectHandler) SetNameSuggestionProfile(w http.ResponseWriter, r *http
 
 // InitDirectory は POST /api/v1/projects/init-directory を処理する。
 func (h *ProjectHandler) InitDirectory(w http.ResponseWriter, r *http.Request) {
-	var req initDirectoryRequest
+	var req model.InitDirectoryRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, http.StatusBadRequest, "BAD_REQUEST", "リクエストの形式が不正です", nil)
 		return
 	}
 
-	result, err := h.svc.InitDirectory(r.Context(), req.ProjectName, req.LocalPath, req.Template)
+	result, err := h.svc.InitDirectory(r.Context(), req.ProjectName)
 	if err != nil {
 		handleProjectServiceError(w, err)
 		return

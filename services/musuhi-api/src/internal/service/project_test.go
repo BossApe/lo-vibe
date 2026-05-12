@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"musuhi-api/internal/model"
+	model "musuhi-api/internal/model"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -122,13 +122,18 @@ func TestProjectService_SuggestName_存在しない概要IDからプロジェク
 	assert.ErrorIs(t, err, ErrNotFound)
 }
 
-func TestProjectService_InitDirectory_有効なプロジェクト名と絶対パスで初期ディレクトリを作成する_正常系(t *testing.T) {
+func TestProjectService_InitDirectory_新仕様でprj配下に作成_正常系(t *testing.T) {
 	repo := new(mockProjectOverviewRepository)
 	svc := NewProjectService(repo)
 
-	tmp := t.TempDir()
-	target := filepath.Join(tmp, "demo_project")
-	result, err := svc.InitDirectory(context.Background(), "demo_project", target, "default")
+	baseDir := t.TempDir()
+	oldBase := "/app/prj"
+	os.Setenv("PRJ_BASE_DIR", baseDir)
+	defer os.Setenv("PRJ_BASE_DIR", oldBase)
+
+	projectName := "demo_project"
+	target := filepath.Join(baseDir, projectName)
+	result, err := svc.InitDirectory(context.Background(), projectName)
 	assert.NoError(t, err)
 	assert.Equal(t, "success", result.DirectoryStatus)
 
@@ -138,7 +143,7 @@ func TestProjectService_InitDirectory_有効なプロジェクト名と絶対パ
 	// README.md が生成されていること
 	readmeContent, readErr := os.ReadFile(filepath.Join(target, "README.md"))
 	assert.NoError(t, readErr)
-	assert.Contains(t, string(readmeContent), "demo_project")
+	assert.Contains(t, string(readmeContent), projectName)
 }
 
 func TestProjectService_SuggestName_有効な概要IDからプロジェクト名候補を取得する_正常系(t *testing.T) {
@@ -334,11 +339,20 @@ func TestProjectService_SuggestName_AI候補が不正形式の時にフォール
 	ai.AssertExpectations(t)
 }
 
-func TestProjectService_InitDirectory_相対パスで初期ディレクトリを作成する_異常系(t *testing.T) {
+func TestProjectService_InitDirectory_重複プロジェクト名で作成_異常系(t *testing.T) {
 	repo := new(mockProjectOverviewRepository)
 	svc := NewProjectService(repo)
 
-	_, err := svc.InitDirectory(context.Background(), "demo_project", "relative/path", "default")
+	baseDir := t.TempDir()
+	oldBase := "/app/prj"
+	os.Setenv("PRJ_BASE_DIR", baseDir)
+	defer os.Setenv("PRJ_BASE_DIR", oldBase)
+
+	projectName := "dup_project"
+	target := filepath.Join(baseDir, projectName)
+	os.MkdirAll(target, 0o755)
+
+	_, err := svc.InitDirectory(context.Background(), projectName)
 	assert.ErrorIs(t, err, ErrValidation)
 }
 

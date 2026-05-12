@@ -120,15 +120,15 @@ func TestProjectHandler_SuggestName_概要IDを空で指定してプロジェク
 	assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
 }
 
-func TestProjectHandler_InitDirectory_有効な入力で初期ディレクトリを作成する_正常系(t *testing.T) {
+func TestProjectHandler_InitDirectory_新仕様で初期ディレクトリを作成する_正常系(t *testing.T) {
 	svc := new(mockProjectService)
 	h := NewProjectHandler(svc)
 	id := uuid.New()
-	svc.On("InitDirectory", mock.Anything, "demo-project", "/tmp", "default").Return(
+	svc.On("InitDirectory", mock.Anything, "demo-project").Return(
 		&model.ProjectInitResult{ID: id, DirectoryStatus: "success"}, nil,
 	)
 
-	body := `{"projectName":"demo-project","localPath":"/tmp","template":"default"}`
+	body := `{"projectName":"demo-project"}`
 	req := httptest.NewRequest(http.MethodPost, "/api/v1/projects/init-directory", bytes.NewBufferString(body))
 	rec := httptest.NewRecorder()
 

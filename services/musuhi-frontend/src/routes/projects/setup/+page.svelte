@@ -162,9 +162,7 @@
 		isLoading = true;
 		try {
 			const result = await postJson('/api/v1/projects/init-directory', {
-				projectName: selectedProjectName,
-				localPath,
-				template: 'default'
+				projectName: selectedProjectName
 			});
 			directoryStatus = result.data?.directoryStatus ?? 'success';
 		} catch (e) {
@@ -236,7 +234,10 @@
 			{/if}
 
 			<label for="localPath">ローカル作成先パス（絶対パス）</label>
-			<input id="localPath" bind:value={localPath} oninput={() => localPathEdited = true} placeholder="/Users/yourname/gitspace/プロジェクト名" />
+
+			<button onclick={handleInitDirectory} disabled={isLoading || !selectedProjectName}>
+				{isLoading ? '作成中...' : '初期ディレクトリ作成'}
+			</button>
 
 			<button onclick={handleInitDirectory} disabled={isLoading || !selectedProjectName || !localPath.trim()}>
 				{isLoading ? '作成中...' : '初期ディレクトリ作成'}

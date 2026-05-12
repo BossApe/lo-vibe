@@ -2,6 +2,11 @@ package model
 
 import "github.com/google/uuid"
 
+// InitDirectoryRequest は初期ディレクトリ作成APIのリクエスト型。
+type InitDirectoryRequest struct {
+	ProjectName string `json:"projectName"`
+}
+
 // ProjectExtraction は機能抽出結果を表す。
 type ProjectExtraction struct {
 	Features   []string `json:"features"`

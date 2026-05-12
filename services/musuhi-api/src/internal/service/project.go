@@ -31,8 +31,8 @@ type ProjectService interface {
 	GetNameSuggestionProfile(ctx context.Context) (*model.NameSuggestionProfile, error)
 	// SetNameSuggestionProfile はプロファイル設定を変更します。
 	SetNameSuggestionProfile(ctx context.Context, profile string) (*model.NameSuggestionProfile, error)
-	// InitDirectory は指定したパスにプロジェクトの初期ディレクトリ構成を生成します。
-	InitDirectory(ctx context.Context, projectName, localPath, template string) (*model.ProjectInitResult, error)
+	// InitDirectory はprj/{projectName}に初期ディレクトリ構成を生成します。
+	InitDirectory(ctx context.Context, projectName string) (*model.ProjectInitResult, error)
 	// CreateRepositoryWithExternal はGitHubリポジトリ作成と初回pushを実行します。
 	CreateRepositoryWithExternal(ctx context.Context, owner, repoName, visibility, localPath, commitMessage string) (*model.ProjectWithExternalResult, error)
 	// CreateGitHubProjects はGitHub Projectsボードを作成します。
@@ -149,28 +149,24 @@ func (s *projectService) SetNameSuggestionProfile(_ context.Context, profile str
 	return &updated, nil
 }
 
-// InitDirectory は指定したパスにプロジェクトの初期ディレクトリ構成を生成します。
-func (s *projectService) InitDirectory(_ context.Context, projectName, localPath, template string) (*model.ProjectInitResult, error) {
+// InitDirectory は prj/{projectName} にプロジェクトの初期ディレクトリ構成を生成します。
+func (s *projectService) InitDirectory(_ context.Context, projectName string) (*model.ProjectInitResult, error) {
 	if strings.TrimSpace(projectName) == "" {
 		return nil, fmt.Errorf("%w: projectName is required", ErrValidation)
 	}
 	if !projectNamePattern.MatchString(projectName) {
 		return nil, fmt.Errorf("%w: projectName must match %s", ErrValidation, projectNamePattern.String())
 	}
-	if strings.TrimSpace(localPath) == "" {
-		return nil, fmt.Errorf("%w: localPath is required", ErrValidation)
+	// prj配下固定（テスト時はPRJ_BASE_DIR環境変数で上書き可）
+	baseDir := os.Getenv("PRJ_BASE_DIR")
+	if baseDir == "" {
+		baseDir = "/app/prj"
 	}
-	if !filepath.IsAbs(localPath) {
-		return nil, fmt.Errorf("%w: localPath must be absolute path", ErrValidation)
+	root := filepath.Join(baseDir, projectName)
+	// 重複禁止
+	if _, err := os.Stat(root); err == nil {
+		return nil, fmt.Errorf("%w: projectName already exists", ErrValidation)
 	}
-	if template == "" {
-		template = "default"
-	}
-	if template != "default" {
-		return nil, fmt.Errorf("%w: unsupported template", ErrValidation)
-	}
-
-	root := filepath.Clean(localPath)
 	if err := os.MkdirAll(root, 0o755); err != nil {
 		return nil, fmt.Errorf("projectService.InitDirectory: %w", err)
 	}
