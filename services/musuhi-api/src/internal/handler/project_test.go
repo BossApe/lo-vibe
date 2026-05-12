@@ -53,8 +53,8 @@ func (m *mockProjectService) SetNameSuggestionProfile(ctx context.Context, profi
 	return args.Get(0).(*model.NameSuggestionProfile), args.Error(1)
 }
 
-func (m *mockProjectService) InitDirectory(ctx context.Context, projectName, localPath, template string) (*model.ProjectInitResult, error) {
-	args := m.Called(ctx, projectName, localPath, template)
+func (m *mockProjectService) InitDirectory(ctx context.Context, projectName string) (*model.ProjectInitResult, error) {
+	args := m.Called(ctx, projectName)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
@@ -218,11 +218,11 @@ func TestProjectHandler_SetNameSuggestionProfile_更新する_正常系(t *testi
 func TestProjectHandler_InitDirectory_不正なプロジェクト名で初期ディレクトリを作成する_異常系(t *testing.T) {
 	svc := new(mockProjectService)
 	h := NewProjectHandler(svc)
-	svc.On("InitDirectory", mock.Anything, "bad name!", "/tmp", "default").Return(
+	svc.On("InitDirectory", mock.Anything, "bad name!").Return(
 		nil, fmt.Errorf("%w: projectName must match pattern", service.ErrValidation),
 	)
 
-	body := `{"projectName":"bad name!","localPath":"/tmp","template":"default"}`
+	body := `{"projectName":"bad name!"}`
 	req := httptest.NewRequest(http.MethodPost, "/api/v1/projects/init-directory", bytes.NewBufferString(body))
 	rec := httptest.NewRecorder()
 
