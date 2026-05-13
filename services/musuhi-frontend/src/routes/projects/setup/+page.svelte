@@ -235,10 +235,6 @@
 
 			<label for="localPath">ローカル作成先パス（絶対パス）</label>
 
-			<button onclick={handleInitDirectory} disabled={isLoading || !selectedProjectName}>
-				{isLoading ? '作成中...' : '初期ディレクトリ作成'}
-			</button>
-
 			<button onclick={handleInitDirectory} disabled={isLoading || !selectedProjectName || !localPath.trim()}>
 				{isLoading ? '作成中...' : '初期ディレクトリ作成'}
 			</button>
