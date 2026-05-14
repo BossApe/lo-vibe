@@ -59,7 +59,7 @@ services:
       ollama-model-pull:
         condition: service_completed_successfully
     volumes:
-      - ../services/musuhi-api/prj:/app/prj
+      - ../../oject:/app/project
 
   musuhi-frontend:
     build:

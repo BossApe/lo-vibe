@@ -157,10 +157,10 @@ func (s *projectService) InitDirectory(_ context.Context, projectName string) (*
 	if !projectNamePattern.MatchString(projectName) {
 		return nil, fmt.Errorf("%w: projectName must match %s", ErrValidation, projectNamePattern.String())
 	}
-	// prj配下固定（テスト時はPRJ_BASE_DIR環境変数で上書き可）
-	baseDir := os.Getenv("PRJ_BASE_DIR")
+	// Musuhi/project/<projectName> 配下に作成
+	baseDir := os.Getenv("PROJECTS_BASE_DIR")
 	if baseDir == "" {
-		baseDir = "/app/prj"
+		baseDir = "/app/project"
 	}
 	root := filepath.Join(baseDir, projectName)
 	// 重複禁止
