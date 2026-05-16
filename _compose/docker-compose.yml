@@ -1,4 +1,11 @@
+ 
 services:
+  scrumblr:
+    build:
+      context: /Users/m.nohara/gitspace/Musuhi/services/scrumblr
+      dockerfile: Dockerfile
+    ports:
+      - "13030:3000"
   postgres:
     image: postgres:16-alpine
     environment:
@@ -73,6 +80,7 @@ services:
       VITE_API_BASE_URL: http://localhost:18080
     depends_on:
       - musuhi-api
+
 
 volumes:
   postgres_data:
