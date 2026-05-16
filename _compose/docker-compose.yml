@@ -4,19 +4,23 @@ services:
     build:
       context: /Users/m.nohara/gitspace/Musuhi/services/scrumblr
       dockerfile: Dockerfile
+      args:
+        REDIS_URL: redis://redis:6379
     ports:
-      - "13030:3000"
+      - "13030:8080"
     environment:
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      REDIS_URL: redis://redis:6379
     depends_on:
       - redis
-    redis:
-      image: redis:7-alpine
-      ports:
-        - "16379:6379"
-      volumes:
-        - redis_data:/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "16379:6379"
+    volumes:
+      - redis_data:/data
   postgres:
     image: postgres:16-alpine
     environment:
@@ -77,7 +81,7 @@ services:
       ollama-model-pull:
         condition: service_completed_successfully
     volumes:
-      - ../../oject:/app/project
+      - ../../projects:/app/projects
 
   musuhi-frontend:
     build:
@@ -89,9 +93,9 @@ services:
       - "13000:3000"
     environment:
       VITE_API_BASE_URL: http://localhost:18080
+      PORT: 3000
     depends_on:
       - musuhi-api
-
 
 volumes:
   postgres_data:
