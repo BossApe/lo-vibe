@@ -9,4 +9,4 @@ RUN npm run build
 EXPOSE 3000
 ENV NODE_ENV=production
 ENV PORT=3000
-CMD npm run preview -- --host 0.0.0.0 --port $PORT
+CMD ["sh", "-c", "npm run preview -- --host 0.0.0.0 --port $PORT"]
