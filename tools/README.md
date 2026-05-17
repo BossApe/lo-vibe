@@ -10,15 +10,23 @@
 
 ```text
 tools/
-├── README.md             # このファイル
-└── save_promptinglog/    # Copilot プロンプトログ保存ツール (Go)
+├── README.md                        # このファイル
+├── test_result_export/              # テスト結果出力統一ツール (Shell)
+├── save_promptinglog/               # Copilot プロンプトログ保存ツール (Go)
+├── generate_issue_roadmap/          # Issue難易度ロードマップ生成ツール (Go)
+├── set_project_fields/              # GitHub Project フィールド一括設定ツール (Shell)
+└── open_in_integrated_browser_ext/  # VS Code 拡張機能
 ```
 
 ## ツール一覧
 
 | ディレクトリ / ファイル名 | 種別 | 概要 |
 | --- | --- | --- |
+| `test_result_export/` | Shell script | テスト結果を固定ファイル名で出力し、雛形ファイルも生成する |
 | `save_promptinglog/` | Go バッチ | Copilot Chat のトランスクリプトを Markdown 形式で保存する |
+| `generate_issue_roadmap/` | Go バッチ | `gh api` で取得した Issue 一覧から難易度ロードマップ HTML を生成する |
+| `set_project_fields/` | Shell script | GitHub Project のカスタムフィールドを一括設定する |
+| `open_in_integrated_browser_ext/` | VS Code 拡張機能 | Explorer の右クリックメニューに「統合ブラウザで開く」を追加する |
 
 ## 利用方法
 

@@ -1,7 +1,7 @@
 package main
 
-import "save_promptinglog/source"
+import "save_promptinglog/internal/promptinglog"
 
 func main() {
-	source.Main()
+	promptinglog.Main()
 }

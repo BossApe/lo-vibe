@@ -1,0 +1,37 @@
+{
+  "name": "open-in-integrated-browser",
+  "displayName": "Open in Integrated Browser",
+  "description": "Add explorer context menu to open HTML files in VS Code integrated browser.",
+  "version": "0.0.1",
+  "publisher": "local",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "openInIntegratedBrowser.open",
+        "title": "統合ブラウザで開く"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "openInIntegratedBrowser.open",
+          "when": "resourceScheme == file && (resourceExtname == .html || resourceExtname == .htm)",
+          "group": "navigation@20"
+        }
+      ]
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BossApe/Musuhi.git",
+    "directory": "tools/open_in_integrated_browser_ext"
+  },
+  "license": "UNLICENSED"
+}

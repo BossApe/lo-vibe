@@ -1,0 +1,52 @@
+# FR-004-API仕様書
+
+前: [FR-004-インフラ構成図](FR-004-インフラ構成図.md) | [一覧](README.md) | 次: [FR-004-画面設計書](FR-004-画面設計書.md)
+
+## 1. POST /api/v1/projects/{id}/github-projects
+
+### 1.1 リクエスト
+
+| 項目 | 型 | 必須 | 説明 |
+| --- | --- | --- | --- |
+| owner | string | 必須 | GitHub owner（ユーザーまたは組織） |
+| title | string | 必須 | 作成する Projects タイトル |
+
+### 1.2 レスポンス（201）
+
+| 項目 | 型 | 説明 |
+| --- | --- | --- |
+| projectsUrl | string | 作成した Projects URL |
+| projectsId | string | GitHub Projects Node ID |
+| status | string | success 固定 |
+
+## 2. POST /api/v1/projects/{id}/phase0-tasks
+
+### 2.1 リクエスト
+
+| 項目 | 型 | 必須 | 説明 |
+| --- | --- | --- | --- |
+| owner | string | 必須 | GitHub owner（ユーザーまたは組織） |
+| projectsId | string | 必須 | Projects Node ID |
+
+### 2.2 レスポンス（201）
+
+| 項目 | 型 | 説明 |
+| --- | --- | --- |
+| tasks | array | 追加した Phase0 タスク |
+| status | string | success 固定 |
+
+#### tasks 要素
+
+| 項目 | 型 | 説明 |
+| --- | --- | --- |
+| id | string | Project Item ID |
+| title | string | タスクタイトル |
+| type | string | Phase/Sprint/Ticket |
+
+## 3. エラーコード
+
+| HTTP | code | 条件 |
+| --- | --- | --- |
+| 400 | BAD_REQUEST | JSON 不正 |
+| 422 | VALIDATION_ERROR | 必須項目不足 |
+| 500 | INTERNAL_ERROR | GraphQL 実行失敗 |

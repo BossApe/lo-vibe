@@ -1,0 +1,13 @@
+[実行日時] 2026-05-09 11:54:25
+[対象ID] FR-004
+[テスト種別] 外部結合テスト
+[コマンド] go test ./internal/service -count=1 -run GHProjectsClient -v
+
+=== RUN   TestGHProjectsClient_CreateProject_GitHubProjectsを作成してカスタムフィールドを追加する_正常系
+--- PASS: TestGHProjectsClient_CreateProject_GitHubProjectsを作成してカスタムフィールドを追加する_正常系 (0.00s)
+=== RUN   TestGHProjectsClient_AddPhase0Tasks_Phase0タスクをProjectsへ登録する_正常系
+--- PASS: TestGHProjectsClient_AddPhase0Tasks_Phase0タスクをProjectsへ登録する_正常系 (0.00s)
+PASS
+ok  	musuhi-api/internal/service	0.199s
+
+[終了コード] 0

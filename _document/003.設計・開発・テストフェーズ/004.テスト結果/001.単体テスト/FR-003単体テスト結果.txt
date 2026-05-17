@@ -1,0 +1,23 @@
+[実行日時] 2026-05-09 00:23:07
+[対象ID] FR-003
+[テスト種別] 単体テスト
+[コマンド] go test ./internal/handler ./internal/service -run WithExternal|CreateRepositoryWithExternal -v
+
+=== RUN   TestProjectHandler_WithExternal_有効な入力でGitHubリポジトリ作成と初回pushを実行する_正常系
+--- PASS: TestProjectHandler_WithExternal_有効な入力でGitHubリポジトリ作成と初回pushを実行する_正常系 (0.00s)
+=== RUN   TestProjectHandler_WithExternal_ownerを空で指定してGitHubリポジトリ作成を実行する_異常系
+--- PASS: TestProjectHandler_WithExternal_ownerを空で指定してGitHubリポジトリ作成を実行する_異常系 (0.00s)
+PASS
+ok  	musuhi-api/internal/handler	0.192s
+=== RUN   TestProjectService_CreateRepositoryWithExternal_有効な入力でGitHubリポジトリ作成と初回pushを実行する_正常系
+--- PASS: TestProjectService_CreateRepositoryWithExternal_有効な入力でGitHubリポジトリ作成と初回pushを実行する_正常系 (0.00s)
+=== RUN   TestProjectService_CreateRepositoryWithExternal_ownerを空で指定してGitHubリポジトリ作成を実行する_異常系
+--- PASS: TestProjectService_CreateRepositoryWithExternal_ownerを空で指定してGitHubリポジトリ作成を実行する_異常系 (0.00s)
+=== RUN   TestProjectService_CreateRepositoryWithExternal_localPathが相対パスの状態でGitHubリポジトリ作成を実行する_異常系
+--- PASS: TestProjectService_CreateRepositoryWithExternal_localPathが相対パスの状態でGitHubリポジトリ作成を実行する_異常系 (0.00s)
+=== RUN   TestProjectService_CreateRepositoryWithExternal_GitHub側でリポジトリ名重複エラーが発生する_異常系
+--- PASS: TestProjectService_CreateRepositoryWithExternal_GitHub側でリポジトリ名重複エラーが発生する_異常系 (0.00s)
+PASS
+ok  	musuhi-api/internal/service	0.339s
+
+[終了コード] 0

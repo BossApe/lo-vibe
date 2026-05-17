@@ -1,0 +1,320 @@
+# FR-001-API仕様書
+
+前: [FR-001-インフラ構成図](FR-001-インフラ構成図.md) | [一覧](README.md) | 次: [FR-001-画面設計書](FR-001-画面設計書.md)
+
+> **対象**: TK1-1-1 で実装した FR-001「システム概要入力・保存」の API エンドポイント詳細仕様
+
+<details>
+<summary>目次（クリックで展開）</summary>
+
+- [1. 共通仕様](#1-共通仕様)
+  - [1.1 ベース URL](#11-ベース-url)
+  - [1.2 リクエスト・レスポンス形式](#12-リクエストレスポンス形式)
+  - [1.3 エラーレスポンス形式](#13-エラーレスポンス形式)
+- [2. エンドポイント一覧](#2-エンドポイント一覧)
+- [3. エンドポイント詳細](#3-エンドポイント詳細)
+  - [3.1 POST /api/v1/system-overviews — システム概要を保存](#31-post-apiv1system-overviews--システム概要を保存)
+  - [3.2 GET /api/v1/system-overviews/{id} — システム概要を取得](#32-get-apiv1system-overviewsid--システム概要を取得)
+  - [3.3 PUT /api/v1/system-overviews/{id} — システム概要を更新](#33-put-apiv1system-overviewsid--システム概要を更新)
+- [4. バリデーションルール](#4-バリデーションルール)
+- [5. 実装箇所](#5-実装箇所)
+
+</details>
+
+---
+
+## 1. 共通仕様
+
+### 1.1 ベース URL
+
+| 環境 | URL |
+| --- | --- |
+| ローカル開発 | `http://localhost:8080` |
+| Docker Compose 内 | `http://musuhi-api:8080` |
+
+### 1.2 リクエスト・レスポンス形式
+
+```
+Content-Type: application/json
+Accept: application/json
+```
+
+- 認証: SP1-1 スコープでは認証なし（将来的に Bearer JWT を追加予定）
+- 全レスポンスは `{"data": {...}}` または `{"error": {...}}` の envelope 形式
+
+### 1.3 エラーレスポンス形式
+
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "エラーメッセージ（日本語）",
+    "details": [
+      { "field": "content", "message": "詳細メッセージ" }
+    ]
+  }
+}
+```
+
+| エラーコード | HTTP ステータス | 発生条件 |
+| --- | --- | --- |
+| `BAD_REQUEST` | 400 | JSON デコード失敗 / UUID 形式不正 |
+| `VALIDATION_ERROR` | 422 | バリデーションルール違反 |
+| `NOT_FOUND` | 404 | 指定 ID のリソースが存在しない |
+| `INTERNAL_ERROR` | 500 | DB エラー等のサーバー内部エラー |
+
+---
+
+## 2. エンドポイント一覧
+
+| メソッド | パス | 概要 | 詳細 |
+| --- | --- | --- | --- |
+| `POST` | `/api/v1/system-overviews` | システム概要を保存 | [→ 詳細](#31-post-apiv1system-overviews--システム概要を保存) |
+| `GET` | `/api/v1/system-overviews/{id}` | システム概要を取得 | [→ 詳細](#32-get-apiv1system-overviewsid--システム概要を取得) |
+| `PUT` | `/api/v1/system-overviews/{id}` | システム概要を更新 | [→ 詳細](#33-put-apiv1system-overviewsid--システム概要を更新) |
+
+---
+
+## 3. エンドポイント詳細
+
+### 3.1 POST /api/v1/system-overviews — システム概要を保存
+
+**目的**: ユーザが入力したシステム概要テキストを DB に保存し、採番された UUID を返す
+
+#### リクエスト
+
+```http
+POST /api/v1/system-overviews
+Content-Type: application/json
+```
+
+```json
+{
+  "content": "string（必須）"
+}
+```
+
+| フィールド | 型 | 必須 | 制約 | 説明 |
+| --- | --- | --- | --- | --- |
+| `content` | string | ○ | 1〜4096 文字（Unicode ルーン数） | システム概要の自由記述テキスト |
+
+#### レスポンス
+
+**201 Created — 保存成功**
+
+```json
+{
+  "data": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "content": "- ユーザ管理機能\n- 商品カタログ表示",
+    "createdAt": "2026-05-05T09:00:00+09:00"
+  }
+}
+```
+
+| フィールド | 型 | 説明 |
+| --- | --- | --- |
+| `data.id` | string (UUID v4) | 生成された一意識別子 |
+| `data.content` | string | 保存されたシステム概要テキスト |
+| `data.createdAt` | string (RFC 3339) | 保存日時（タイムゾーン付き） |
+
+**400 Bad Request — JSON 形式不正**
+
+```json
+{
+  "error": {
+    "code": "BAD_REQUEST",
+    "message": "リクエストの形式が不正です"
+  }
+}
+```
+
+**422 Unprocessable Entity — バリデーションエラー**
+
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "validation error: content is required",
+    "details": [
+      { "field": "content", "message": "validation error: content is required" }
+    ]
+  }
+}
+```
+
+**500 Internal Server Error**
+
+```json
+{
+  "error": {
+    "code": "INTERNAL_ERROR",
+    "message": "サーバーエラーが発生しました"
+  }
+}
+```
+
+---
+
+### 3.2 GET /api/v1/system-overviews/{id} — システム概要を取得
+
+**目的**: UUID を指定して保存済みシステム概要を1件取得する
+
+#### リクエスト
+
+```http
+GET /api/v1/system-overviews/{id}
+```
+
+| パスパラメータ | 型 | 必須 | 制約 | 説明 |
+| --- | --- | --- | --- | --- |
+| `id` | string (UUID v4) | ○ | UUID 形式必須 | 取得対象の ID |
+
+#### レスポンス
+
+**200 OK — 取得成功**
+
+```json
+{
+  "data": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "content": "- ユーザ管理機能\n- 商品カタログ表示",
+    "createdAt": "2026-05-05T09:00:00+09:00"
+  }
+}
+```
+
+**400 Bad Request — UUID 形式不正**
+
+```json
+{
+  "error": {
+    "code": "BAD_REQUEST",
+    "message": "validation error: invalid id format"
+  }
+}
+```
+
+**404 Not Found — 指定 ID が存在しない**
+
+```json
+{
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "指定されたIDのシステム概要が存在しません"
+  }
+}
+```
+
+---
+
+### 3.3 PUT /api/v1/system-overviews/{id} — システム概要を更新
+
+**目的**: 既存のシステム概要レコードを上書き更新する。SCR-002 から SCR-001 へ戻った際に既存 ID で再送信するために利用する。
+
+#### リクエスト
+
+```http
+PUT /api/v1/system-overviews/{id}
+Content-Type: application/json
+```
+
+| パスパラメータ | 型 | 必須 | 制約 | 説明 |
+| --- | --- | --- | --- | --- |
+| `id` | string (UUID v4) | ○ | UUID 形式必須 | 更新対象の ID |
+
+```json
+{
+  "content": "string（必須）"
+}
+```
+
+| フィールド | 型 | 必須 | 制約 | 説明 |
+| --- | --- | --- | --- | --- |
+| `content` | string | ○ | 1〜4096 文字（Unicode ルーン数） | 更新後のシステム概要テキスト |
+
+#### レスポンス
+
+**200 OK — 更新成功**
+
+```json
+{
+  "data": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "content": "- 更新後の機能一覧",
+    "createdAt": "2026-05-05T09:00:00+09:00"
+  }
+}
+```
+
+**400 Bad Request — JSON 形式不正 / UUID 形式不正**
+
+```json
+{
+  "error": {
+    "code": "BAD_REQUEST",
+    "message": "リクエストの形式が不正です"
+  }
+}
+```
+
+**404 Not Found — 指定 ID が存在しない**
+
+```json
+{
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "指定されたIDのシステム概要が存在しません"
+  }
+}
+```
+
+**422 Unprocessable Entity — バリデーションエラー**
+
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "validation error: content is required",
+    "details": [
+      { "field": "content", "message": "validation error: content is required" }
+    ]
+  }
+}
+```
+
+**500 Internal Server Error**
+
+```json
+{
+  "error": {
+    "code": "INTERNAL_ERROR",
+    "message": "サーバーエラーが発生しました"
+  }
+}
+```
+
+---
+
+## 4. バリデーションルール
+
+| 項目 | ルール | エラー時ステータス | エラーコード |
+| --- | --- | --- | --- |
+| `content` 空文字チェック | 空文字・空白のみ不可 | 422 | `VALIDATION_ERROR` |
+| `content` 最大文字数 | Unicode ルーン数で 4096 文字以内 | 422 | `VALIDATION_ERROR` |
+| `{id}` UUID 形式チェック | `uuid.Parse()` で検証 | 400 | `BAD_REQUEST` |
+
+> **実装注記**: 文字数は `utf8.RuneCountInString()` で計算する（バイト数ではない）。
+> 最大長定数: `const maxContentLength = 4096`（`service/system_overview.go`）
+
+---
+
+## 5. 実装箇所
+
+| レイヤー | ファイル | 主な責務 |
+| --- | --- | --- |
+| Handler | `services/musuhi-api/src/internal/handler/system_overview.go` | HTTP リクエスト/レスポンス変換・エラーマッピング |
+| Service | `services/musuhi-api/src/internal/service/system_overview.go` | バリデーション・ビジネスロジック |
+| Repository | `services/musuhi-api/src/internal/repository/system_overview_postgres.go` | SQL 発行（INSERT / SELECT / UPDATE） |
+| Model | `services/musuhi-api/src/internal/model/system_overview.go` | ドメインモデル定義 |
+| Router | `services/musuhi-api/src/main.go` | エンドポイント登録（Go 1.22 ServeMux） |

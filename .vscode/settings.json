@@ -1,0 +1,9 @@
+{
+  "editor.fontSize": 17,
+  "editor.fontFamily": "'HackGen Console NF'",
+  "editor.fontLigatures": false,
+  "editor.letterSpacing": 0,
+  "editor.renderWhitespace": "all",
+  "terminal.integrated.fontFamily": "'HackGen Console NF'",
+  "markdown.preview.fontFamily": "'HackGen Console NF'"
+}
