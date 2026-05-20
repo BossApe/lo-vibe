@@ -50,35 +50,35 @@
 | 003 | [画面設計書](002.FR-002-機能抽出・ディレクトリ作成/FR-002-画面設計書.md) | SCR-002 画面入力項目・画面状態・API呼び出し仕様 |
 | 008 | [インフラ構成図](002.FR-002-機能抽出・ディレクトリ作成/FR-002-インフラ構成図.md) | TK1-1-2 実装時点のサービス・LLM・ローカルFS 構成図 |
 
-### FR-003 GitHubリポジトリ作成・initial push
+### FR-003 Forgejoリポジトリ作成・initial push
 
-ディレクトリ: [003.FR-003-GitHubリポジトリ作成・initial-push](003.FR-003-GitHubリポジトリ作成・initial-push/)
-
-| # | ドキュメント | 説明 |
-| --- | --- | --- |
-| 001 | [処理フロー設計書](003.FR-003-GitHubリポジトリ作成・initial-push/FR-003-処理フロー設計書.md) | GitHubリポジトリ作成・initial push の処理フロー |
-| 002 | [インフラ構成図](003.FR-003-GitHubリポジトリ作成・initial-push/FR-003-インフラ構成図.md) | TK1-1-3 実装時点のサービス・GitHub・ローカルGit 構成図 |
-| 003 | [API仕様書](003.FR-003-GitHubリポジトリ作成・initial-push/FR-003-API仕様書.md) | FR-003 API の入出力・バリデーション・エラー仕様 |
-| 004 | [画面設計書](003.FR-003-GitHubリポジトリ作成・initial-push/FR-003-画面設計書.md) | SCR-003 画面入力項目・画面状態・操作仕様 |
-| 006 | [テスト仕様書](003.FR-003-GitHubリポジトリ作成・initial-push/FR-003-テスト仕様書.md) | 単体/API/内部結合/外部結合テストケース一覧 |
-| 007 | [エラーハンドリング設計書](003.FR-003-GitHubリポジトリ作成・initial-push/FR-003-エラーハンドリング設計書.md) | レイヤー別エラー処理責務・エラーコード一覧 |
-| 008 | [フロントエンドコンポーネント設計書](003.FR-003-GitHubリポジトリ作成・initial-push/FR-003-フロントエンドコンポーネント設計書.md) | SCR-003 状態変数・関数仕様・UI構成 |
-| 009 | [シーケンス図（エラー詳細）](003.FR-003-GitHubリポジトリ作成・initial-push/FR-003-シーケンス図（エラー詳細）.md) | 異常系シーケンス図 |
-
-### FR-004 GitHub Projects作成・Phase0タスク生成
-
-ディレクトリ: [004.FR-004-GitHub-Projects作成・Phase0タスク生成](004.FR-004-GitHub-Projects作成・Phase0タスク生成/)
+ディレクトリ: [003.FR-003-Forgejoリポジトリ作成・initial-push](003.FR-003-Forgejoリポジトリ作成・initial-push/)
 
 | # | ドキュメント | 説明 |
 | --- | --- | --- |
-| 001 | [処理フロー設計書](004.FR-004-GitHub-Projects作成・Phase0タスク生成/FR-004-処理フロー設計書.md) | Projects作成・Phase0タスク登録の処理フロー |
-| 002 | [インフラ構成図](004.FR-004-GitHub-Projects作成・Phase0タスク生成/FR-004-インフラ構成図.md) | TK1-1-4 実装時点のサービス・GitHub Projects 構成図 |
-| 003 | [API仕様書](004.FR-004-GitHub-Projects作成・Phase0タスク生成/FR-004-API仕様書.md) | FR-004 API 2本の入出力・エラー仕様 |
-| 004 | [画面設計書](004.FR-004-GitHub-Projects作成・Phase0タスク生成/FR-004-画面設計書.md) | SCR-004 画面入力項目・状態・操作仕様 |
-| 006 | [テスト仕様書](004.FR-004-GitHub-Projects作成・Phase0タスク生成/FR-004-テスト仕様書.md) | 単体/API/内部結合/外部結合のテスト観点 |
-| 007 | [エラーハンドリング設計書](004.FR-004-GitHub-Projects作成・Phase0タスク生成/FR-004-エラーハンドリング設計書.md) | レイヤー別エラー処理責務・エラーコード一覧 |
-| 008 | [フロントエンドコンポーネント設計書](004.FR-004-GitHub-Projects作成・Phase0タスク生成/FR-004-フロントエンドコンポーネント設計書.md) | SCR-004 状態変数・関数仕様・UI構成 |
-| 009 | [シーケンス図（エラー詳細）](004.FR-004-GitHub-Projects作成・Phase0タスク生成/FR-004-シーケンス図（エラー詳細）.md) | 異常系シーケンス図 |
+| 001 | [処理フロー設計書](003.FR-003-Forgejoリポジトリ作成・initial-push/FR-003-処理フロー設計書.md) | Forgejoリポジトリ作成・initial push の処理フロー |
+| 002 | [インフラ構成図](003.FR-003-Forgejoリポジトリ作成・initial-push/FR-003-インフラ構成図.md) | TK1-1-3 実装時点のサービス・Forgejo・ローカルGit 構成図 |
+| 003 | [API仕様書](003.FR-003-Forgejoリポジトリ作成・initial-push/FR-003-API仕様書.md) | FR-003 API の入出力・バリデーション・エラー仕様 |
+| 004 | [画面設計書](003.FR-003-Forgejoリポジトリ作成・initial-push/FR-003-画面設計書.md) | SCR-003 画面入力項目・画面状態・操作仕様 |
+| 006 | [テスト仕様書](003.FR-003-Forgejoリポジトリ作成・initial-push/FR-003-テスト仕様書.md) | 単体/API/内部結合/外部結合テストケース一覧 |
+| 007 | [エラーハンドリング設計書](003.FR-003-Forgejoリポジトリ作成・initial-push/FR-003-エラーハンドリング設計書.md) | レイヤー別エラー処理責務・エラーコード一覧 |
+| 008 | [フロントエンドコンポーネント設計書](003.FR-003-Forgejoリポジトリ作成・initial-push/FR-003-フロントエンドコンポーネント設計書.md) | SCR-003 状態変数・関数仕様・UI構成 |
+| 009 | [シーケンス図（エラー詳細）](003.FR-003-Forgejoリポジトリ作成・initial-push/FR-003-シーケンス図（エラー詳細）.md) | 異常系シーケンス図 |
+
+### FR-004 Forgejo Projects作成・Phase0タスク生成
+
+ディレクトリ: [004.FR-004-Forgejo-Projects作成・Phase0タスク生成](004.FR-004-Forgejo-Projects作成・Phase0タスク生成/)
+
+| # | ドキュメント | 説明 |
+| --- | --- | --- |
+| 001 | [処理フロー設計書](004.FR-004-Forgejo-Projects作成・Phase0タスク生成/FR-004-処理フロー設計書.md) | Projects作成・Phase0タスク登録の処理フロー |
+| 002 | [インフラ構成図](004.FR-004-Forgejo-Projects作成・Phase0タスク生成/FR-004-インフラ構成図.md) | TK1-1-4 実装時点のサービス・Forgejo Projects 構成図 |
+| 003 | [API仕様書](004.FR-004-Forgejo-Projects作成・Phase0タスク生成/FR-004-API仕様書.md) | FR-004 API 2本の入出力・エラー仕様 |
+| 004 | [画面設計書](004.FR-004-Forgejo-Projects作成・Phase0タスク生成/FR-004-画面設計書.md) | SCR-004 画面入力項目・状態・操作仕様 |
+| 006 | [テスト仕様書](004.FR-004-Forgejo-Projects作成・Phase0タスク生成/FR-004-テスト仕様書.md) | 単体/API/内部結合/外部結合のテスト観点 |
+| 007 | [エラーハンドリング設計書](004.FR-004-Forgejo-Projects作成・Phase0タスク生成/FR-004-エラーハンドリング設計書.md) | レイヤー別エラー処理責務・エラーコード一覧 |
+| 008 | [フロントエンドコンポーネント設計書](004.FR-004-Forgejo-Projects作成・Phase0タスク生成/FR-004-フロントエンドコンポーネント設計書.md) | SCR-004 状態変数・関数仕様・UI構成 |
+| 009 | [シーケンス図（エラー詳細）](004.FR-004-Forgejo-Projects作成・Phase0タスク生成/FR-004-シーケンス図（エラー詳細）.md) | 異常系シーケンス図 |
 
 ---
 

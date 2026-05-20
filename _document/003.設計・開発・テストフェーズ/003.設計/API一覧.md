@@ -32,9 +32,9 @@
 | API-FR002-POST-001 | POST | `/api/v1/projects/extract-features` | FR-002 機能抽出 | 実装済み | [FR-002 API仕様書 1](002.FR-002-機能抽出・ディレクトリ作成/FR-002-API仕様書.md#1-post-apiv1projectsextract-features) |
 | API-FR002-POST-002 | POST | `/api/v1/projects/suggest-name` | FR-002 プロジェクト名候補生成 | 実装済み | [FR-002 API仕様書 2](002.FR-002-機能抽出・ディレクトリ作成/FR-002-API仕様書.md#2-post-apiv1projectssuggest-name) |
 | API-FR002-POST-003 | POST | `/api/v1/projects/init-directory` | FR-002 初期ディレクトリ作成 | 実装済み | [FR-002 API仕様書 3](002.FR-002-機能抽出・ディレクトリ作成/FR-002-API仕様書.md#3-post-apiv1projectsinit-directory) |
-| API-FR003-POST-001 | POST | `/api/v1/projects/with-external` | FR-003 GitHubリポジトリ作成・push | 実装済み | [FR-003 API仕様書 1](003.FR-003-GitHubリポジトリ作成・initial-push/FR-003-API仕様書.md#1-post-apiv1projectswith-external) |
-| API-FR004-POST-001 | POST | `/api/v1/projects/{id}/github-projects` | FR-004 GitHub Projects作成 | 実装済み | [FR-004 API仕様書 1](004.FR-004-GitHub-Projects作成・Phase0タスク生成/FR-004-API仕様書.md#1-post-apiv1projectsidgithub-projects) |
-| API-FR004-POST-002 | POST | `/api/v1/projects/{id}/phase0-tasks` | FR-004 Phase0固定タスク生成 | 実装済み | [FR-004 API仕様書 2](004.FR-004-GitHub-Projects作成・Phase0タスク生成/FR-004-API仕様書.md#2-post-apiv1projectsidphase0-tasks) |
+| API-FR003-POST-001 | POST | `/api/v1/projects/with-external` | FR-003 Forgejoリポジトリ作成・push | 実装済み | [FR-003 API仕様書 1](003.FR-003-Forgejoリポジトリ作成・initial-push/FR-003-API仕様書.md#1-post-apiv1projectswith-external) |
+| API-FR004-POST-001 | POST | `/api/v1/projects/{id}/forgejo-projects` | FR-004 Forgejo Projects作成 | 実装済み | [FR-004 API仕様書 1](004.FR-004-Forgejo-Projects作成・Phase0タスク生成/FR-004-API仕様書.md#1-post-apiv1projectsidforgejo-projects) |
+| API-FR004-POST-002 | POST | `/api/v1/projects/{id}/phase0-tasks` | FR-004 Phase0固定タスク生成 | 実装済み | [FR-004 API仕様書 2](004.FR-004-Forgejo-Projects作成・Phase0タスク生成/FR-004-API仕様書.md#2-post-apiv1projectsidphase0-tasks) |
 
 ---
 
@@ -44,8 +44,8 @@
 | --- | --- | --- |
 | FR-001 | [FR-001 API仕様書](001.FR-001-システム概要入力/FR-001-API仕様書.md) | 詳細定義あり（実装済み） |
 | FR-002 | [FR-002 API仕様書](002.FR-002-機能抽出・ディレクトリ作成/FR-002-API仕様書.md) | TK1-1-2 実装済み |
-| FR-003 | [FR-003 API仕様書](003.FR-003-GitHubリポジトリ作成・initial-push/FR-003-API仕様書.md) | TK1-1-3 実装済み |
-| FR-004 | [FR-004 API仕様書](004.FR-004-GitHub-Projects作成・Phase0タスク生成/FR-004-API仕様書.md) | TK1-1-4 実装済み |
+| FR-003 | [FR-003 API仕様書](003.FR-003-Forgejoリポジトリ作成・initial-push/FR-003-API仕様書.md) | TK1-1-3 実装済み |
+| FR-004 | [FR-004 API仕様書](004.FR-004-Forgejo-Projects作成・Phase0タスク生成/FR-004-API仕様書.md) | TK1-1-4 実装済み |
 
 ---
 
