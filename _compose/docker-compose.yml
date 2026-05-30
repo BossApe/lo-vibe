@@ -21,15 +21,21 @@ services:
       - "16379:6379"
     volumes:
       - redis_data:/data
+
   postgres:
-    image: postgres:16-alpine
+    build:
+      context: ../../Musuhi/services/postgres
+      dockerfile: Dockerfile
     environment:
       POSTGRES_USER: musuhi
       POSTGRES_PASSWORD: musuhi
       POSTGRES_DB: musuhi
+    ports:
+      - "15432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ../services/musuhi-api/src/db/migrations:/docker-entrypoint-initdb.d:ro
+      - ../services/postgres/00_initdb-forgejo.sh:/docker-entrypoint-initdb.d/00_initdb-forgejo.sh:ro
+      - ../services/postgres/migrations:/docker-entrypoint-initdb.d/migrations:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U musuhi"]
       interval: 5s
@@ -65,9 +71,13 @@ services:
     build:
       context: ../services/musuhi-api/src
       dockerfile: ../Dockerfile
+      args:
+          - DATABASE_URL=postgres://musuhi:musuhi@postgres:5432/musuhi
+          - FORGEJO_URL=${FORGEJO_URL:-http://forgejo:3000}
     ports:
       - "18080:8080"
     environment:
+      # @@@残作業:.envファイルを作成し、argsとDockerfileの定義を合わせるUSER/PASSWORK/DB/Token/URLなど。全体見直し
       DATABASE_URL: postgres://musuhi:musuhi@postgres:5432/musuhi
       MUSUHI_LLM_ENDPOINT: ${MUSUHI_LLM_ENDPOINT:-http://ollama:11434/v1}
       MUSUHI_LLM_API_KEY: ${MUSUHI_LLM_API_KEY:-}
@@ -76,12 +86,15 @@ services:
       MUSUHI_LLM_MODEL_BALANCED: ${MUSUHI_LLM_MODEL_BALANCED:-qwen2.5:3b-instruct}
       MUSUHI_LLM_MODEL_QUALITY: ${MUSUHI_LLM_MODEL_QUALITY:-qwen2.5:7b-instruct}
     depends_on:
+      forgejo:
+        condition: service_healthy
       postgres:
         condition: service_healthy
       ollama-model-pull:
         condition: service_completed_successfully
     volumes:
       - ../../projects:/app/projects
+      - shared_data:/shared
 
   musuhi-frontend:
     build:
@@ -90,6 +103,7 @@ services:
       args:
         VITE_API_BASE_URL: http://localhost:18080
     ports:
+      # @@@残作業:ポート番号の見直し。3000番はフロントエンドのデフォルト。forgejoとずらす。13000番は仮。全体見直し
       - "13000:3000"
     environment:
       VITE_API_BASE_URL: http://localhost:18080
@@ -97,7 +111,41 @@ services:
     depends_on:
       - musuhi-api
 
+  forgejo:
+    build:
+      context: ../../Musuhi/services/forgejo
+      dockerfile: Dockerfile
+    ports:
+      - "13031:3000"   # Web UI
+      - "13032:22"     # SSH (optional)
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+      - FORGEJO__database__DB_TYPE=postgres
+      - FORGEJO__database__HOST=postgres:5432
+      - FORGEJO__database__NAME=forgejo
+      - FORGEJO__database__USER=musuhi
+      - FORGEJO__database__PASSWD=musuhi
+      - FORGEJO__database__SCHEMA=forgejo
+      - FORGEJO__log__ROOT_PATH=/data/forgejo/log
+      - FORGEJO__INSTALL__LOCK=true
+      # 初回セットアップ画面を有効化
+      - FORGEJO__server__DOMAIN=localhost
+      - FORGEJO__server__ROOT_URL=http://localhost:13031/
+      - FORGEJO__server__SSH_DOMAIN=localhost
+      - FORGEJO__server__SSH_PORT=13032
+      - FORGEJO_APP_INI=/data/forgejo/conf/app.ini
+    volumes:
+      - forgejo_data:/data
+      - ../../services/forgejo/log:/data/forgejo/log
+      - forgejo_token:/shared
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 volumes:
   postgres_data:
   ollama_data:
   redis_data:
+  forgejo_data:
+  forgejo_token:

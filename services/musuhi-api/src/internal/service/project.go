@@ -23,21 +23,13 @@ var projectNamePattern = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9_-]*$`)
 
 // ProjectService は FR-002〜FR-004 のビジネスロジックインターフェース。
 type ProjectService interface {
-	// ExtractFeatures は概要IDから機能一覧と構成要素を抽出します。
 	ExtractFeatures(ctx context.Context, overviewID string) (*model.ProjectExtraction, error)
-	// SuggestName は概要IDからプロジェクト名候補を提案します。
 	SuggestName(ctx context.Context, overviewID string) (*model.ProjectNameSuggestion, error)
-	// GetNameSuggestionProfile は現在のプロファイル設定を取得します。
 	GetNameSuggestionProfile(ctx context.Context) (*model.NameSuggestionProfile, error)
-	// SetNameSuggestionProfile はプロファイル設定を変更します。
 	SetNameSuggestionProfile(ctx context.Context, profile string) (*model.NameSuggestionProfile, error)
-	// InitDirectory はprj/{projectName}に初期ディレクトリ構成を生成します。
 	InitDirectory(ctx context.Context, projectName string) (*model.ProjectInitResult, error)
-	// CreateRepositoryWithExternal はGitHubリポジトリ作成と初回pushを実行します。
 	CreateRepositoryWithExternal(ctx context.Context, owner, repoName, visibility, localPath, commitMessage string) (*model.ProjectWithExternalResult, error)
-	// CreateGitHubProjects はGitHub Projectsボードを作成します。
 	CreateGitHubProjects(ctx context.Context, id, owner, title string) (*model.GitHubProjectsResult, error)
-	// CreatePhase0Tasks はPhase0タスクをProjectsボードに登録します。
 	CreatePhase0Tasks(ctx context.Context, id, owner, projectsID string) (*model.Phase0TasksResult, error)
 }
 
@@ -45,7 +37,7 @@ type ProjectService interface {
 // 各種リポジトリ・外部クライアントをDIします。
 type projectService struct {
 	overviewRepo         repository.SystemOverviewRepository
-	githubClient         GitHubClient
+	gitClient            ExternalGitClient
 	githubProjectsClient GitHubProjectsClient
 	nameSuggester        ProjectNameSuggester
 }
@@ -85,7 +77,7 @@ func NewProjectService(overviewRepo repository.SystemOverviewRepository) Project
 func NewProjectServiceWithNameSuggester(overviewRepo repository.SystemOverviewRepository, nameSuggester ProjectNameSuggester) ProjectService {
 	return &projectService{
 		overviewRepo:         overviewRepo,
-		githubClient:         newDefaultGitHubClient(),
+		gitClient:            newDefaultExternalGitClient(),
 		githubProjectsClient: newDefaultGitHubProjectsClient(),
 		nameSuggester:        nameSuggester,
 	}
@@ -160,7 +152,7 @@ func (s *projectService) InitDirectory(_ context.Context, projectName string) (*
 	// Musuhi/project/<projectName> 配下に作成
 	baseDir := os.Getenv("PROJECTS_BASE_DIR")
 	if baseDir == "" {
-		baseDir = "/app/project"
+		baseDir = "/app/projects"
 	}
 	root := filepath.Join(baseDir, projectName)
 	// 重複禁止

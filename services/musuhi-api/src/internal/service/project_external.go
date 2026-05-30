@@ -1,6 +1,6 @@
 package service
 
-// GitHubClient は GitHub リポジトリ作成と initial push の実行を抽象化するインターフェース。
+// ExternalGitClient は Forgejo（Gitea互換）リポジトリ作成と initial push の実行を抽象化するインターフェース。
 
 import (
 	"context"
@@ -15,7 +15,7 @@ import (
 )
 
 // GitHubClient は GitHub リポジトリ作成と initial push の実行を抽象化する。
-type GitHubClient interface {
+type ExternalGitClient interface {
 	CreateRepositoryAndInitialPush(ctx context.Context, owner, repoName, visibility, localPath, commitMessage string) (*model.ProjectWithExternalResult, error)
 }
 
@@ -33,17 +33,30 @@ func (e *defaultCommandExecutor) CombinedOutput(ctx context.Context, name string
 	return cmd.CombinedOutput()
 }
 
-// ghGitHubClient は GitHub CLI を用いた GitHubClient 実装。
-type ghGitHubClient struct {
-	exec commandExecutor
+// forgejoClient は Forgejo API/CLI を用いた ExternalGitClient 実装。
+type forgejoClient struct {
+	exec   commandExecutor
+	apiURL string
+	token  string
+	user   string
 }
 
-// newDefaultGitHubClient は ghGitHubClient を生成します。
-func newDefaultGitHubClient() GitHubClient {
-	return &ghGitHubClient{exec: &defaultCommandExecutor{}}
+// newDefaultExternalGitClient は forgejoClient を生成します。
+// 必要に応じて環境変数からForgejo API情報を取得
+func newDefaultExternalGitClient() ExternalGitClient {
+	apiURL := os.Getenv("FORGEJO_API_URL")
+	if apiURL == "" {
+		apiURL = "http://localhost:13031/api/v1"
+	}
+	token := os.Getenv("FORGEJO_TOKEN")
+	user := os.Getenv("FORGEJO_USER")
+	if user == "" {
+		user = "musuhi"
+	}
+	return &forgejoClient{exec: &defaultCommandExecutor{}, apiURL: apiURL, token: token, user: user}
 }
 
-// CreateRepositoryWithExternal はGitHubリポジトリ作成と初回pushを実行します。
+// CreateRepositoryWithExternal はForgejoリポジトリ作成と初回pushを実行します。
 func (s *projectService) CreateRepositoryWithExternal(ctx context.Context, owner, repoName, visibility, localPath, commitMessage string) (*model.ProjectWithExternalResult, error) {
 	owner = strings.TrimSpace(owner)
 	repoName = strings.TrimSpace(repoName)
@@ -79,11 +92,8 @@ func (s *projectService) CreateRepositoryWithExternal(ctx context.Context, owner
 		return nil, fmt.Errorf("%w: localPath must be existing directory", ErrValidation)
 	}
 
-	result, err := s.githubClient.CreateRepositoryAndInitialPush(ctx, owner, repoName, visibility, localPath, commitMessage)
+	result, err := s.gitClient.CreateRepositoryAndInitialPush(ctx, owner, repoName, visibility, localPath, commitMessage)
 	if err != nil {
-		if isKnownGitHubInputError(err) {
-			return nil, fmt.Errorf("%w: %s", ErrValidation, err.Error())
-		}
 		return nil, fmt.Errorf("projectService.CreateRepositoryWithExternal: %w", err)
 	}
 	return result, nil
@@ -98,46 +108,50 @@ func isKnownGitHubInputError(err error) bool {
 		strings.Contains(msg, "not logged in")
 }
 
-// CreateRepositoryAndInitialPush はローカルリポジトリ初期化・GitHubリポジトリ作成・初回pushを実行します。
-func (c *ghGitHubClient) CreateRepositoryAndInitialPush(ctx context.Context, owner, repoName, visibility, localPath, commitMessage string) (*model.ProjectWithExternalResult, error) {
+// CreateRepositoryAndInitialPush はローカルリポジトリ初期化・Forgejoリポジトリ作成・初回pushを実行します。
+func (c *forgejoClient) CreateRepositoryAndInitialPush(ctx context.Context, owner, repoName, visibility, localPath, commitMessage string) (*model.ProjectWithExternalResult, error) {
 	if err := c.prepareLocalRepository(ctx, localPath, commitMessage); err != nil {
 		return nil, err
 	}
 
-	visFlag := "--private"
+	// Forgejo APIでリポジトリ作成
+	vis := "private"
 	if visibility == "public" {
-		visFlag = "--public"
+		vis = "public"
 	}
-
-	fullName := owner + "/" + repoName
-	args := []string{"repo", "create", fullName, visFlag, "--source", localPath, "--push", "--remote", "origin"}
-	out, err := c.exec.CombinedOutput(ctx, "gh", args...)
+	// curl -X POST -H "Authorization: token ..." -H "Content-Type: application/json" .../api/v1/user/repos -d '{...}'
+	apiURL := c.apiURL + "/users/" + owner + "/repos"
+	payload := fmt.Sprintf(`{"name":"%s","private":%v}`, repoName, vis == "private")
+	args := []string{"-sS", "-X", "POST", "-H", "Authorization: token " + c.token, "-H", "Content-Type: application/json", apiURL, "-d", payload}
+	out, err := c.exec.CombinedOutput(ctx, "curl", args...)
 	if err != nil {
-		return nil, fmt.Errorf("gh repo create failed: %w: %s", err, strings.TrimSpace(string(out)))
+		return nil, fmt.Errorf("forgejo repo create failed: %w: %s", err, strings.TrimSpace(string(out)))
 	}
 
-	repoURL := "https://github.com/" + fullName
-	if viewOut, viewErr := c.exec.CombinedOutput(ctx, "gh", "repo", "view", fullName, "--json", "url", "--jq", ".url"); viewErr == nil {
-		trimmed := strings.TrimSpace(string(viewOut))
-		if trimmed != "" {
-			repoURL = trimmed
+	// origin URL
+	repoURL := fmt.Sprintf("%s/%s/%s.git", strings.TrimSuffix(c.apiURL, "/api/v1"), owner, repoName)
+
+	// git remote add & push
+	remoteURL := fmt.Sprintf("http://%s:%s@%s/%s/%s.git", c.user, c.token, strings.TrimPrefix(strings.TrimPrefix(c.apiURL, "http://"), "https://"), owner, repoName)
+	if out, err := c.exec.CombinedOutput(ctx, "git", "-C", localPath, "remote", "add", "origin", remoteURL); err != nil {
+		msg := strings.ToLower(string(out))
+		if !strings.Contains(msg, "remote origin already exists") {
+			return nil, fmt.Errorf("git remote add origin failed: %w: %s", err, strings.TrimSpace(string(out)))
 		}
 	}
-
-	externalID := ""
-	if idOut, idErr := c.exec.CombinedOutput(ctx, "gh", "api", "repos/"+fullName, "--jq", ".id"); idErr == nil {
-		externalID = strings.TrimSpace(string(idOut))
+	if out, err := c.exec.CombinedOutput(ctx, "git", "-C", localPath, "push", "-u", "origin", "main"); err != nil {
+		return nil, fmt.Errorf("git push failed: %w: %s", err, strings.TrimSpace(string(out)))
 	}
 
 	return &model.ProjectWithExternalResult{
 		RepositoryURL:     repoURL,
-		ExternalProjectID: externalID,
+		ExternalProjectID: repoName,
 		PushStatus:        "success",
 	}, nil
 }
 
 // prepareLocalRepository はローカルリポジトリの初期化・add・commit・mainブランチ作成・origin削除を行います。
-func (c *ghGitHubClient) prepareLocalRepository(ctx context.Context, localPath, commitMessage string) error {
+func (c *forgejoClient) prepareLocalRepository(ctx context.Context, localPath, commitMessage string) error {
 	if _, err := c.exec.CombinedOutput(ctx, "git", "-C", localPath, "rev-parse", "--is-inside-work-tree"); err != nil {
 		out, initErr := c.exec.CombinedOutput(ctx, "git", "-C", localPath, "init")
 		if initErr != nil {
